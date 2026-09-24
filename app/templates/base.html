@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <!-- Makes the page fit phone screens (NFR: usable on a 375px-wide phone) -->
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}LiftLog{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+  <header class="site-header">
+    <a class="logo" href="{{ url_for('main.index') }}">LiftLog</a>
+    <nav>
+      <!-- Links (Log In, My Workouts, History...) get added here as features are built -->
+    </nav>
+  </header>
+
+  <main class="container">
+    <!-- Short messages from the server, e.g. "Account created" or "Wrong password" -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for category, message in messages %}
+        <div class="flash flash-{{ category }}">{{ message }}</div>
+      {% endfor %}
+    {% endwith %}
+
+    {% block content %}{% endblock %}
+  </main>
+</body>
+</html>
