@@ -3,5 +3,12 @@
 {% block content %}
   <h1>Welcome to LiftLog</h1>
   <p>Plan your workouts, log every set, and watch your progress.</p>
-  <p class="muted">The app is running. Features will appear here as the team builds them.</p>
+  {% if current_user.is_authenticated %}
+    <p><a class="button" href="{{ url_for('main.dashboard') }}">Go to my LiftLog</a></p>
+  {% else %}
+    <p>
+      <a class="button" href="{{ url_for('auth.register') }}">Create an account</a>
+      <a href="{{ url_for('auth.login') }}">or log in</a>
+    </p>
+  {% endif %}
 {% endblock %}

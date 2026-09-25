@@ -9,7 +9,7 @@ import os
 from flask import Flask
 
 from app.config import Config
-from app.extensions import bcrypt, csrf, db, migrate
+from app.extensions import bcrypt, csrf, db, login_manager, migrate
 
 
 def create_app(config_class=Config):
@@ -26,13 +26,21 @@ def create_app(config_class=Config):
 
     # Connect the add-ons to this app.
     db.init_app(app)
-    migrate.init_app(app, db)
+    # render_as_batch lets migrations change existing tables on SQLite too.
+    migrate.init_app(app, db, render_as_batch=True)
     bcrypt.init_app(app)
     csrf.init_app(app)
+    login_manager.init_app(app)
+
+    # Import the models so the database (and Flask-Migrate) knows about every table.
+    from app import models  # noqa: F401
 
     # Blueprints group related pages. Each feature (auth, exercises,
     # templates, sessions...) will get its own blueprint folder like app/main.
     from app.main import bp as main_bp
     app.register_blueprint(main_bp)
+
+    from app.auth import bp as auth_bp
+    app.register_blueprint(auth_bp)
 
     return app

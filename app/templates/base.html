@@ -10,8 +10,18 @@
 <body>
   <header class="site-header">
     <a class="logo" href="{{ url_for('main.index') }}">LiftLog</a>
-    <nav>
-      <!-- Links (Log In, My Workouts, History...) get added here as features are built -->
+    <nav class="nav">
+      {% if current_user.is_authenticated %}
+        <a href="{{ url_for('main.dashboard') }}">{{ current_user.username }}</a>
+        <!-- Log out is a small form (not a link) so it can carry a CSRF token -->
+        <form class="inline" method="post" action="{{ url_for('auth.logout') }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button type="submit" class="link-button">Log out</button>
+        </form>
+      {% else %}
+        <a href="{{ url_for('auth.login') }}">Log in</a>
+        <a href="{{ url_for('auth.register') }}">Register</a>
+      {% endif %}
     </nav>
   </header>
 
