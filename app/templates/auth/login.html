@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% from "_form_field.html" import field %}
+
+{% block title %}Log in · LiftLog{% endblock %}
+
+{% block content %}
+  <h1>Log in</h1>
+  <form method="post" novalidate class="card">
+    {{ form.hidden_tag() }}  {# the hidden CSRF token #}
+    {{ field(form.username, autocomplete="username") }}
+    {{ field(form.password, autocomplete="current-password") }}
+    {{ form.submit(class="button") }}
+  </form>
+  <p>New to LiftLog? <a href="{{ url_for('auth.register') }}">Create an account</a></p>
+{% endblock %}

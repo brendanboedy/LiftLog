@@ -1,0 +1,23 @@
+# Secrets and local settings - never commit these
+.env
+
+# Python virtual environment
+venv/
+.venv/
+
+# Python cache files
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Local SQLite database and other local-only files
+instance/
+
+# Editor / OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Word's temporary lock files (created while a .docx is open)
+~$*

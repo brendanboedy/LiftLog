@@ -1,0 +1,15 @@
+# Python packages LiftLog needs (from the project proposal).
+# Install them with:  pip install -r requirements.txt
+
+Flask>=3.1,<4                # web framework
+Flask-SQLAlchemy>=3.1,<4     # talk to the database with Python classes instead of raw SQL
+Flask-Migrate>=4.0,<5        # create/update database tables when models change
+PyMySQL>=1.1,<2              # lets SQLAlchemy connect to MySQL
+Flask-Login>=0.6,<1          # keeps track of who is logged in
+Flask-Bcrypt>=1.0,<2         # hashes passwords safely
+Flask-WTF>=1.2,<2            # forms + CSRF protection
+python-dotenv>=1.0,<2        # reads settings from the .env file
+cryptography>=42             # required by PyMySQL for MySQL 8 logins
+
+# Testing
+pytest>=8,<9
