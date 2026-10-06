@@ -3,11 +3,17 @@ from urllib.parse import urlsplit
 
 from flask import flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required, login_user, logout_user
+from sqlalchemy.exc import IntegrityError
 
 from app.auth import bp
 from app.auth.forms import LoginForm, RegistrationForm
-from app.extensions import db
+from app.extensions import bcrypt, db
 from app.models import User
+
+# A real bcrypt hash of a throwaway string. When the username doesn't exist we
+# still check the password against this, so a wrong username takes as long as a
+# wrong password and the response time doesn't reveal which usernames exist.
+PLACEHOLDER_HASH = "$2b$12$olLoTCHqrrqQViGnXs.Q5ONxaQpBxmNEo0g8PA3BvoTNlGJjNEgs."
 
 
 def safe_next_url():
@@ -35,11 +41,17 @@ def register():
         user = User(username=form.username.data.strip())
         user.set_password(form.password.data)
         db.session.add(user)
-        db.session.commit()
-
-        login_user(user)  # log them straight in after signing up
-        flash("Welcome to LiftLog! Your account was created.", "success")
-        return redirect(url_for("main.dashboard"))
+        try:
+            db.session.commit()
+        except IntegrityError:
+            # Someone registered the same username between the form check and
+            # this save. Show the normal "taken" message instead of a server error.
+            db.session.rollback()
+            form.username.errors.append("That username is already taken.")
+        else:
+            login_user(user)  # log them straight in after signing up
+            flash("Welcome to LiftLog! Your account was created.", "success")
+            return redirect(url_for("main.dashboard"))
 
     return render_template("auth/register.html", form=form)
 
@@ -53,7 +65,9 @@ def login():
     form = LoginForm()
     if form.validate_on_submit():
         user = User.find_by_username(form.username.data)
-        if user is not None and user.check_password(form.password.data):
+        if user is None:
+            bcrypt.check_password_hash(PLACEHOLDER_HASH, form.password.data)
+        elif user.check_password(form.password.data):
             login_user(user)
             return redirect(safe_next_url())
         # Same message whether the username or the password was wrong,

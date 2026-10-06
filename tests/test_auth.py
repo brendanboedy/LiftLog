@@ -1,7 +1,7 @@
 """Tests for registration, login and logout (issue #9: FR-1, FR-2, FR-3, FR-36, NFR-1, NFR-3, NFR-4)."""
 from app import create_app
 from app.config import TestConfig
-from app.extensions import db
+from app.extensions import bcrypt, db
 from app.models import User
 
 
@@ -57,6 +57,18 @@ def test_duplicate_username_is_rejected_ignoring_case(client):
     assert db.session.execute(db.select(db.func.count(User.id))).scalar() == 1
 
 
+def test_username_taken_during_save_shows_error_not_server_error(client, monkeypatch):
+    """If two people register the same name at once, the loser sees the normal error (not a 500)."""
+    register(client, username="olivia")
+    logout(client)
+    # Pretend the form check didn't see the existing user, so the database's unique index catches it.
+    monkeypatch.setattr(User, "find_by_username", staticmethod(lambda username: None))
+    response = register(client, username="olivia")
+    assert response.status_code == 200
+    assert b"That username is already taken." in response.data
+    assert db.session.execute(db.select(db.func.count(User.id))).scalar() == 1
+
+
 def test_passwords_must_match(client):
     response = register(client, password="strongpass1", confirm="different1")
     assert b"Passwords do not match." in response.data
@@ -102,6 +114,16 @@ def test_login_with_wrong_password_shows_generic_error(client):
 def test_login_with_unknown_username_shows_same_error(client):
     response = client.post("/auth/login", data={"username": "nobody", "password": "whatever1"})
     assert b"Incorrect username or password." in response.data
+
+
+def test_login_with_unknown_username_still_runs_a_password_check(client, monkeypatch):
+    """Skipping the bcrypt check for unknown users would make them answer faster and reveal which names exist."""
+    calls = []
+    real_check = bcrypt.check_password_hash
+    monkeypatch.setattr(bcrypt, "check_password_hash",
+                        lambda hashed, password: calls.append(hashed) or real_check(hashed, password))
+    client.post("/auth/login", data={"username": "nobody", "password": "whatever1"})
+    assert len(calls) == 1
 
 
 def test_login_returns_to_the_page_the_user_wanted(client):
