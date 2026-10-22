@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block title %}{{ exercise.name }} · LiftLog{% endblock %}
+
+{% block content %}
+  <p><a href="{{ url_for('exercises.list_exercises') }}">&larr; All exercises</a></p>
+
+  <h1>{{ exercise.name }}</h1>
+  <p>
+    {% if exercise.is_predefined %}
+      <span class="badge badge-muted">Predefined</span>
+    {% else %}
+      <span class="badge">Custom</span>
+    {% endif %}
+    {% if exercise.is_archived %}<span class="badge badge-muted">Archived</span>{% endif %}
+  </p>
+
+  <div class="card">
+    <dl class="details">
+      <dt>Muscle group</dt><dd>{{ exercise.muscle_group }}</dd>
+      <dt>Equipment</dt><dd>{{ exercise.equipment_type }}</dd>
+      <dt>Movement type</dt><dd>{{ exercise.movement_type }}</dd>
+      <dt>Difficulty</dt><dd>{{ exercise.difficulty }}</dd>
+    </dl>
+    <h2>Instructions</h2>
+    {% if exercise.instructions %}
+      {# white-space: pre-line in the CSS keeps the user's line breaks #}
+      <p class="instructions">{{ exercise.instructions }}</p>
+    {% else %}
+      <p class="muted">No instructions yet.</p>
+    {% endif %}
+  </div>
+
+  {% if exercise.is_owned_by(current_user) %}
+    <div class="actions">
+      <a class="button" href="{{ url_for('exercises.edit', exercise_id=exercise.id) }}">Edit</a>
+      {# Archive and restore change data, so they are POST forms with a CSRF token #}
+      {% if exercise.is_archived %}
+        <form class="inline" method="post" action="{{ url_for('exercises.restore', exercise_id=exercise.id) }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button type="submit" class="button button-secondary">Restore</button>
+        </form>
+      {% else %}
+        <form class="inline" method="post" action="{{ url_for('exercises.archive', exercise_id=exercise.id) }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button type="submit" class="button button-secondary">Archive</button>
+        </form>
+      {% endif %}
+    </div>
+  {% endif %}
+{% endblock %}

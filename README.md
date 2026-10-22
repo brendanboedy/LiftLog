@@ -38,6 +38,13 @@ LiftLog is a Python + Flask web app. These steps are for Windows (PowerShell, e.
    ```
    python run.py
    ```
+   Before the first run (and whenever `app/exercises/seed_data.py` changes), load the
+   predefined exercises:
+   ```
+   flask --app run seed-exercises
+   ```
+   Success: it prints `Predefined exercises: N added, N updated.` Running it again is safe.
+
    Open http://127.0.0.1:5000 . You should see "Welcome to LiftLog".
    http://127.0.0.1:5000/health should show `{"database": "ok", "status": "ok"}`. Press `Ctrl+C` to stop.
 7. **Run the tests:**
@@ -69,9 +76,10 @@ app/
   __init__.py      builds the app (create_app)
   config.py        settings, read from .env
   extensions.py    database, login manager, password hashing, CSRF protection
-  models.py        database tables (User so far)
+  models.py        database tables (User and Exercise so far)
   main/            general pages (home, dashboard, /health)
   auth/            register, log in, log out
+  exercises/       exercise library: browse, search, custom exercises, seed data
   templates/       HTML pages (base.html is the shared layout)
   static/          CSS, JavaScript and images
 migrations/        database table changes (made by Flask-Migrate)
