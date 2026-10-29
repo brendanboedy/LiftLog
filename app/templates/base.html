@@ -5,10 +5,10 @@
   <!-- Makes the page fit phone screens (NFR: usable on a 375px-wide phone) -->
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block title %}LiftLog{% endblock %}</title>
-  <!-- Fonts: Barlow Condensed for headings and numbers, Barlow for text -->
+  <!-- Font: Barlow (regular to bold). Only the weights the CSS uses are downloaded. -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@500;600;700&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&display=swap">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
