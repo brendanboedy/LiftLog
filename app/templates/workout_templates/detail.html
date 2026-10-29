@@ -18,6 +18,15 @@
     <p class="instructions">{{ template.description }}</p>
   {% endif %}
 
+  {% if template.items %}
+    {# FR-22: start a workout session that copies this template's exercises #}
+    <form method="post" action="{{ url_for('workout_sessions.start') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <input type="hidden" name="template_id" value="{{ template.id }}">
+      <button type="submit" class="button">Start this workout</button>
+    </form>
+  {% endif %}
+
   <h2>Exercises</h2>
   {% if template.items %}
     <ol class="template-items">

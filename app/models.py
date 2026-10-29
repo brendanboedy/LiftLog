@@ -1,8 +1,7 @@
 """Database tables, written as Python classes (SQLAlchemy "models").
 
-Based on the team's ER model. User, Exercise, WorkoutTemplate and
-WorkoutTemplateExercise exist so far; WorkoutSession and the others will be added here as those
-features are built.
+Based on the team's ER model: User, Exercise, WorkoutTemplate,
+WorkoutTemplateExercise, WorkoutSession, WorkoutSessionExercise and SetEntry.
 """
 from datetime import datetime, timezone
 
@@ -252,6 +251,198 @@ class WorkoutTemplateExercise(db.Model):
 
     def __repr__(self):
         return f"<WorkoutTemplateExercise {self.order_index}: {self.exercise_id}>"
+
+
+# Limits for what a user can record (FR-24, FR-27, FR-36).
+MAX_WEIGHT = 2000          # the app doesn't convert units; the pages label weight as lb (team decision)
+MAX_DURATION_MINUTES = 600
+ENERGY_RATINGS = [1, 2, 3, 4, 5]  # 1 = exhausted, 5 = great (open team decision #5)
+
+
+def as_utc(moment):
+    """SQLite gives dates back without a time zone; treat those as UTC so times can be compared."""
+    if moment is not None and moment.tzinfo is None:
+        return moment.replace(tzinfo=timezone.utc)
+    return moment
+
+
+class WorkoutSession(db.Model):
+    """One workout the user actually did, or is doing right now (ER model: WorkoutSession).
+
+    A session copies its exercises from a template when it starts (FR-22), so
+    editing or deleting the template later never changes this session (FR-26).
+    If the template is deleted, template_id just becomes empty (open team
+    decision #3) and the session keeps its own copy of the template's name.
+
+    Not in the ER model (added so the pages make sense):
+    - name: copy of the template's name ("Quick workout" for an empty session)
+    - created_at: when the workout was started, used to suggest its duration
+    """
+
+    __tablename__ = "workout_sessions"
+    __table_args__ = (
+        db.CheckConstraint("energy_rating IS NULL OR energy_rating BETWEEN 1 AND 5",
+                           name="ck_ws_energy_rating_range"),
+        db.CheckConstraint("duration_minutes IS NULL OR duration_minutes >= 1",
+                           name="ck_ws_duration_positive"),
+    )
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(
+        db.Integer,
+        db.ForeignKey("users.id", ondelete="CASCADE", name="fk_workout_sessions_user_id_users"),
+        nullable=False,
+        index=True,
+    )
+    template_id = db.Column(
+        db.Integer,
+        db.ForeignKey("workout_templates.id", ondelete="SET NULL",
+                      name="fk_workout_sessions_template_id_workout_templates"),
+        index=True,
+    )
+    name = db.Column(db.String(100), nullable=False)
+    notes = db.Column(db.Text)
+    duration_minutes = db.Column(db.Integer)
+    energy_rating = db.Column(db.Integer)
+    # False while the workout is in progress; True once the user finishes it (FR-27).
+    completed = db.Column(db.Boolean, nullable=False, default=False, server_default=db.false())
+    # Filled in when the session is finished.
+    date_performed = db.Column(db.Date)
+    created_at = db.Column(db.DateTime(timezone=True), nullable=False, default=utc_now)
+
+    owner = db.relationship(
+        "User",
+        backref=db.backref("workout_sessions", cascade="all, delete-orphan"),
+    )
+    # No delete cascade here: deleting a template leaves its sessions alone
+    # and SQLAlchemy sets their template_id to empty.
+    template = db.relationship("WorkoutTemplate", backref=db.backref("sessions"))
+    items = db.relationship(
+        "WorkoutSessionExercise",
+        back_populates="session",
+        order_by="WorkoutSessionExercise.order_index",
+        cascade="all, delete-orphan",
+    )
+
+    def is_owned_by(self, user):
+        return self.user_id == user.id
+
+    @property
+    def set_count(self):
+        return sum(len(item.sets) for item in self.items)
+
+    def minutes_so_far(self):
+        """Whole minutes since the session started (at least 1)."""
+        elapsed = utc_now() - as_utc(self.created_at)
+        return max(1, int(elapsed.total_seconds() // 60))
+
+    def renumber(self):
+        for position, item in enumerate(self.items, start=1):
+            item.order_index = position
+
+    @staticmethod
+    def active_for(user):
+        """The user's in-progress session, or None. A user has at most one at a time."""
+        return db.session.execute(
+            db.select(WorkoutSession)
+            .where(WorkoutSession.user_id == user.id, WorkoutSession.completed.is_(False))
+            .order_by(WorkoutSession.id.desc())
+            .limit(1)
+        ).scalar_one_or_none()
+
+    def __repr__(self):
+        return f"<WorkoutSession {self.id} {self.name}>"
+
+
+class WorkoutSessionExercise(db.Model):
+    """One exercise done in a session (ER model: WorkoutSessionExercise).
+
+    target_sets / rep_range_* are copied from the template so the workout page
+    can show what the plan was (not in the ER model; empty for exercises the
+    user added during the workout).
+    """
+
+    __tablename__ = "workout_session_exercises"
+
+    id = db.Column(db.Integer, primary_key=True)
+    session_id = db.Column(
+        db.Integer,
+        db.ForeignKey("workout_sessions.id", ondelete="CASCADE",
+                      name="fk_wse_session_id_workout_sessions"),
+        nullable=False,
+        index=True,
+    )
+    exercise_id = db.Column(
+        db.Integer,
+        db.ForeignKey("exercises.id", name="fk_wse_exercise_id_exercises"),
+        nullable=False,
+        index=True,
+    )
+    order_index = db.Column(db.Integer, nullable=False)
+    target_sets = db.Column(db.Integer)
+    rep_range_min = db.Column(db.Integer)
+    rep_range_max = db.Column(db.Integer)
+
+    session = db.relationship("WorkoutSession", back_populates="items")
+    exercise = db.relationship("Exercise")
+    sets = db.relationship(
+        "SetEntry",
+        back_populates="session_exercise",
+        order_by="SetEntry.set_number",
+        cascade="all, delete-orphan",
+    )
+
+    @property
+    def target(self):
+        """ "3 × 8-12", or None when there was no plan for this exercise."""
+        if self.target_sets is None:
+            return None
+        if self.rep_range_min == self.rep_range_max:
+            reps = str(self.rep_range_min)
+        else:
+            reps = f"{self.rep_range_min}-{self.rep_range_max}"
+        return f"{self.target_sets} × {reps}"
+
+    def renumber_sets(self):
+        for number, entry in enumerate(self.sets, start=1):
+            entry.set_number = number
+
+    def __repr__(self):
+        return f"<WorkoutSessionExercise {self.order_index}: {self.exercise_id}>"
+
+
+class SetEntry(db.Model):
+    """One set the user did: weight and reps (ER model: SetEntry)."""
+
+    __tablename__ = "set_entries"
+    __table_args__ = (
+        db.CheckConstraint("set_number >= 1", name="ck_set_entries_set_number_positive"),
+        db.CheckConstraint("weight >= 0", name="ck_set_entries_weight_not_negative"),
+        db.CheckConstraint("reps >= 1", name="ck_set_entries_reps_positive"),
+    )
+
+    id = db.Column(db.Integer, primary_key=True)
+    session_exercise_id = db.Column(
+        db.Integer,
+        db.ForeignKey("workout_session_exercises.id", ondelete="CASCADE",
+                      name="fk_set_entries_session_exercise_id_workout_session_exercises"),
+        nullable=False,
+        index=True,
+    )
+    set_number = db.Column(db.Integer, nullable=False)
+    weight = db.Column(db.Float, nullable=False)  # 0 for bodyweight exercises
+    reps = db.Column(db.Integer, nullable=False)
+    notes = db.Column(db.String(200))
+
+    session_exercise = db.relationship("WorkoutSessionExercise", back_populates="sets")
+
+    @property
+    def weight_text(self):
+        """135.0 -> "135", 22.5 -> "22.5"."""
+        return f"{self.weight:g}"
+
+    def __repr__(self):
+        return f"<SetEntry {self.set_number}: {self.weight} x {self.reps}>"
 
 
 @login_manager.user_loader

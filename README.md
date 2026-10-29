@@ -76,11 +76,12 @@ app/
   __init__.py      builds the app (create_app)
   config.py        settings, read from .env
   extensions.py    database, login manager, password hashing, CSRF protection
-  models.py        database tables (User, Exercise, WorkoutTemplate, WorkoutTemplateExercise so far)
+  models.py        database tables (User, Exercise, workout templates, sessions and sets)
   main/            general pages (home, dashboard, /health)
   auth/            register, log in, log out
   exercises/       exercise library: browse, search, custom exercises, seed data
   workout_templates/  workout templates: create, add/reorder exercises, edit, delete
+  workout_sessions/   workouts: start from a template, log sets, finish, history
   templates/       HTML pages (base.html is the shared layout)
   static/          CSS, JavaScript and images
 migrations/        database table changes (made by Flask-Migrate)

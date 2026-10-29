@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% from "_form_field.html" import field %}
+
+{% block title %}{{ workout.name }} · LiftLog{% endblock %}
+
+{% block content %}
+  <div class="page-heading">
+    <h1>{{ workout.name }}</h1>
+    <span class="badge">In progress</span>
+  </div>
+  <p class="muted">Started {{ workout.minutes_so_far() }} min ago. Log each set as you finish it.</p>
+
+  {% if not workout.items %}
+    <p>This workout has no exercises yet. Add one below.</p>
+  {% endif %}
+
+  {% for item in workout.items %}
+    {% set form = set_forms[item.id] %}
+    <section class="card session-exercise">
+      <div class="page-heading">
+        <h2>{{ loop.index }}. {{ item.exercise.name }}</h2>
+        <form class="inline" method="post" action="{{ url_for('workout_sessions.remove_exercise', session_id=workout.id, item_id=item.id) }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button type="submit" class="small-button">Remove</button>
+        </form>
+      </div>
+      {% if item.target %}<p class="muted">Target: {{ item.target }} reps</p>{% endif %}
+
+      {% if item.sets %}
+        <table class="sets">
+          <thead><tr><th>Set</th><th>Weight (lb)</th><th>Reps</th><th></th></tr></thead>
+          <tbody>
+            {% for entry in item.sets %}
+              <tr>
+                <td>{{ entry.set_number }}</td>
+                <td>{{ entry.weight_text }}</td>
+                <td>{{ entry.reps }}</td>
+                <td class="set-actions">
+                  <a class="small-button" href="{{ url_for('workout_sessions.edit_set', session_id=workout.id, set_id=entry.id) }}">Edit</a>
+                  <form class="inline" method="post" action="{{ url_for('workout_sessions.delete_set', session_id=workout.id, set_id=entry.id) }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="small-button" aria-label="Delete set {{ entry.set_number }}">Delete</button>
+                  </form>
+                </td>
+              </tr>
+              {% if entry.notes %}<tr class="set-notes"><td></td><td colspan="3" class="muted">{{ entry.notes }}</td></tr>{% endif %}
+            {% endfor %}
+          </tbody>
+        </table>
+      {% endif %}
+
+      <form method="post" novalidate action="{{ url_for('workout_sessions.add_set', session_id=workout.id, item_id=item.id) }}">
+        {{ form.hidden_tag() }}
+        <div class="number-row">
+          {{ field(form.weight, type="number", step="any", min="0", inputmode="decimal") }}
+          {{ field(form.reps, min="1", inputmode="numeric") }}
+          {{ field(form.notes, autocomplete="off") }}
+        </div>
+        {{ form.submit(class="button") }}
+      </form>
+    </section>
+  {% endfor %}
+
+  <h2>Add an exercise</h2>
+  <form method="post" novalidate class="card" action="{{ url_for('workout_sessions.add_exercise', session_id=workout.id) }}">
+    {{ exercise_form.hidden_tag() }}
+    {{ field(exercise_form.exercise_id) }}
+    {{ exercise_form.submit(class="button button-secondary") }}
+    <p class="muted">This only changes today's workout, not the template.</p>
+  </form>
+
+  <div class="actions finish-bar">
+    <a class="button" href="{{ url_for('workout_sessions.finish', session_id=workout.id) }}">Finish workout</a>
+    <a href="{{ url_for('workout_sessions.delete', session_id=workout.id) }}">Cancel workout</a>
+  </div>
+{% endblock %}
