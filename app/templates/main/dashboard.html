@@ -5,5 +5,8 @@
 {% block content %}
   <h1>Hi, {{ current_user.username }}!</h1>
   <p>This is your LiftLog home. Your workouts and progress will show up here as the team builds those features.</p>
-  <p><a class="button" href="{{ url_for('exercises.list_exercises') }}">Browse the exercise library</a></p>
+  <div class="actions">
+    <a class="button" href="{{ url_for('workout_templates.list_templates') }}">My workout templates</a>
+    <a class="button button-secondary" href="{{ url_for('exercises.list_exercises') }}">Browse the exercise library</a>
+  </div>
 {% endblock %}

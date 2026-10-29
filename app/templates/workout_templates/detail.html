@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% from "_form_field.html" import field %}
+
+{% block title %}{{ template.name }} · LiftLog{% endblock %}
+
+{% block content %}
+  <p><a href="{{ url_for('workout_templates.list_templates') }}">&larr; My templates</a></p>
+
+  <div class="page-heading">
+    <h1>{{ template.name }}</h1>
+    <div class="actions">
+      <a href="{{ url_for('workout_templates.edit', template_id=template.id) }}">Edit details</a>
+      <a href="{{ url_for('workout_templates.delete', template_id=template.id) }}">Delete</a>
+    </div>
+  </div>
+  <p><span class="badge badge-muted">{{ template.difficulty }}</span></p>
+  {% if template.description %}
+    <p class="instructions">{{ template.description }}</p>
+  {% endif %}
+
+  <h2>Exercises</h2>
+  {% if template.items %}
+    <ol class="template-items">
+      {% for item in template.items %}
+        <li class="exercise-item">
+          <div class="item-main">
+            <span class="muted">{{ loop.index }}.</span>
+            <a href="{{ url_for('exercises.detail', exercise_id=item.exercise.id) }}">{{ item.exercise.name }}</a>
+            {% if item.exercise.is_archived %}<span class="badge badge-muted">Archived</span>{% endif %}
+            <div class="muted">{{ item.target_sets }} set{{ "" if item.target_sets == 1 else "s" }} × {{ item.rep_range }} reps</div>
+          </div>
+          <div class="item-actions">
+            {# Each button is a tiny POST form so it carries the CSRF token #}
+            <form class="inline" method="post" action="{{ url_for('workout_templates.move_exercise', template_id=template.id, item_id=item.id) }}">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <input type="hidden" name="direction" value="up">
+              <button type="submit" class="small-button" {% if loop.first %}disabled{% endif %} aria-label="Move {{ item.exercise.name }} up">&uarr;</button>
+            </form>
+            <form class="inline" method="post" action="{{ url_for('workout_templates.move_exercise', template_id=template.id, item_id=item.id) }}">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <input type="hidden" name="direction" value="down">
+              <button type="submit" class="small-button" {% if loop.last %}disabled{% endif %} aria-label="Move {{ item.exercise.name }} down">&darr;</button>
+            </form>
+            <a class="small-button" href="{{ url_for('workout_templates.edit_exercise', template_id=template.id, item_id=item.id) }}">Edit</a>
+            <form class="inline" method="post" action="{{ url_for('workout_templates.remove_exercise', template_id=template.id, item_id=item.id) }}">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button type="submit" class="small-button">Remove</button>
+            </form>
+          </div>
+        </li>
+      {% endfor %}
+    </ol>
+  {% else %}
+    <p class="muted">No exercises yet. Add the first one below.</p>
+  {% endif %}
+
+  <h2>Add an exercise</h2>
+  <form method="post" novalidate class="card" action="{{ url_for('workout_templates.add_exercise', template_id=template.id) }}">
+    {{ add_form.hidden_tag() }}
+    {{ field(add_form.exercise_id) }}
+    <div class="number-row">
+      {{ field(add_form.target_sets) }}
+      {{ field(add_form.rep_range_min) }}
+      {{ field(add_form.rep_range_max) }}
+    </div>
+    {{ add_form.submit(class="button") }}
+    <p class="muted">Can't find it? <a href="{{ url_for('exercises.create') }}">Create a custom exercise</a>.</p>
+  </form>
+{% endblock %}

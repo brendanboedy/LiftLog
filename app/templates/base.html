@@ -12,6 +12,7 @@
     <a class="logo" href="{{ url_for('main.index') }}">LiftLog</a>
     <nav class="nav">
       {% if current_user.is_authenticated %}
+        <a href="{{ url_for('workout_templates.list_templates') }}">Templates</a>
         <a href="{{ url_for('exercises.list_exercises') }}">Exercises</a>
         <a href="{{ url_for('main.dashboard') }}">{{ current_user.username }}</a>
         <!-- Log out is a small form (not a link) so it can carry a CSRF token -->

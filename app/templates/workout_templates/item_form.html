@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% from "_form_field.html" import field %}
+
+{% block title %}Edit {{ item.exercise.name }} · LiftLog{% endblock %}
+
+{% block content %}
+  <h1>{{ item.exercise.name }}</h1>
+  <p class="muted">In {{ template.name }}</p>
+
+  <form method="post" novalidate class="card">
+    {{ form.hidden_tag() }}
+    <div class="number-row">
+      {{ field(form.target_sets) }}
+      {{ field(form.rep_range_min) }}
+      {{ field(form.rep_range_max) }}
+    </div>
+    <div class="actions">
+      {{ form.submit(class="button") }}
+      <a href="{{ url_for('workout_templates.detail', template_id=template.id) }}">Cancel</a>
+    </div>
+  </form>
+{% endblock %}
