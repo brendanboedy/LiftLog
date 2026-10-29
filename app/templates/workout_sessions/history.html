@@ -26,11 +26,11 @@
       {% for workout in workouts %}
         <li class="exercise-item">
           <a href="{{ url_for('workout_sessions.detail', session_id=workout.id) }}">{{ workout.name }}</a>
-          <span class="muted">
-            {{ workout.date_performed.strftime("%b %d, %Y") }} ·
-            {{ workout.items|length }} exercise{{ "" if workout.items|length == 1 else "s" }} ·
-            {{ workout.set_count }} set{{ "" if workout.set_count == 1 else "s" }}
-            {% if workout.duration_minutes %}· {{ workout.duration_minutes }} min{% endif %}
+          <span class="muted meta">
+            <span>{{ workout.date_performed.strftime("%b %d, %Y") }}</span>
+            <span>{{ workout.items|length }} exercise{{ "" if workout.items|length == 1 else "s" }}</span>
+            <span>{{ workout.set_count }} set{{ "" if workout.set_count == 1 else "s" }}</span>
+            {% if workout.duration_minutes %}<span>{{ workout.duration_minutes }} min</span>{% endif %}
           </span>
         </li>
       {% endfor %}

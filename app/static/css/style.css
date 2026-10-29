@@ -1,178 +1,342 @@
-/* Basic LiftLog styles. Kept small on purpose - style as features are added. */
+/* LiftLog styles.
+
+   Look: "chalk and iron". A cool chalk-white page, slate ink, and the colours
+   of competition weight plates (blue, red, yellow) used for meaning:
+   blue = the main action, red = deleting, yellow = what's happening now
+   (a workout in progress, keyboard focus).
+
+   Type: Barlow Condensed (headings, buttons, numbers - like gym signage)
+   and Barlow (body text). Loaded from Google Fonts in base.html; if they
+   can't load, the system font is used instead.
+*/
+
+:root {
+  --chalk: #f6f7f4;      /* page background */
+  --white: #ffffff;      /* cards and inputs */
+  --slate: #1c2b36;      /* main text, header */
+  --steel: #5e6b74;      /* secondary text */
+  --rubber: #dadfdb;     /* borders and lines */
+  --rubber-dark: #b9c1bc;
+  --plate-blue: #1e56c8; /* main buttons and links */
+  --plate-blue-dark: #17439c;
+  --plate-blue-tint: #e6edfb;
+  --plate-red: #c8282e;  /* delete / cancel */
+  --plate-red-dark: #a11f24;
+  --plate-red-tint: #fbe8e8;
+  --plate-yellow: #f2b705; /* in progress, focus */
+  --plate-yellow-tint: #fff5d6;
+  --green: #1f7a4d;
+  --green-tint: #e3f3ea;
+
+  --font-body: "Barlow", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-display: "Barlow Condensed", "Arial Narrow", system-ui, sans-serif;
+
+  --radius-card: 10px;
+  --radius-control: 6px;
+}
 
 * { box-sizing: border-box; }
 
 body {
   margin: 0;
-  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  color: #1f2933;
-  background: #f5f7fa;
-  line-height: 1.5;
+  font-family: var(--font-body);
+  font-size: 1.0625rem;  /* 17px */
+  line-height: 1.55;
+  color: var(--slate);
+  background: var(--chalk);
 }
 
+/* ---- Type ---- */
+h1, h2, h3 {
+  font-family: var(--font-display);
+  line-height: 1.1;
+  margin: 0 0 0.5em;
+}
+h1 { font-size: 2.4rem; font-weight: 700; letter-spacing: -0.01em; }
+h2 { font-size: 1.45rem; font-weight: 600; margin-top: 1.6em; }
+p { margin: 0 0 1em; max-width: 68ch; }
+
+a { color: var(--plate-blue); text-underline-offset: 3px; }
+a:hover { color: var(--plate-blue-dark); }
+
+.muted { color: var(--steel); }
+
+/* Keyboard focus: a thick yellow ring that's easy to see on any background. */
+:focus-visible {
+  outline: 3px solid var(--plate-yellow);
+  outline-offset: 2px;
+}
+
+/* ---- Header ---- */
 .site-header {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 16px;
-  background: #1f3a5f;
+  gap: 8px 24px;
+  padding: 12px 20px;
+  background: var(--slate);
 }
-
 .site-header a { color: #fff; text-decoration: none; }
-.logo { font-weight: 700; font-size: 1.25rem; }
 
-.container {
-  max-width: 720px;
-  margin: 0 auto;
-  padding: 16px;
+.logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.6rem;
+  letter-spacing: 0.01em;
+}
+/* A small weight plate drawn in CSS: blue rim, slate hole. */
+.logo::before {
+  content: "";
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--slate) 0 3px, #fff 3.5px 5px, var(--plate-blue) 5.5px);
+  flex: none;
 }
 
-.muted { color: #616e7c; }
-
-.flash {
-  padding: 10px 12px;
-  margin-bottom: 12px;
-  border-radius: 6px;
-  background: #e1effe;
+.nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 20px;
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 500;
 }
-.flash-error { background: #fde8e8; }
-.flash-success { background: #def7ec; }
-
-/* ---- Navigation ---- */
-.nav { display: flex; align-items: center; gap: 16px; }
+.nav a { padding: 4px 0; border-bottom: 3px solid transparent; }
+.nav a:hover { border-bottom-color: var(--rubber-dark); }
+.nav a[aria-current="page"] { border-bottom-color: var(--plate-yellow); }
 .inline { display: inline; margin: 0; }
 .link-button {
   background: none;
   border: none;
-  padding: 0;
-  color: #fff;
+  padding: 4px 0;
+  color: #c9d2d8;
   font: inherit;
   cursor: pointer;
 }
+.link-button:hover { color: #fff; }
 
-/* ---- Forms ---- */
-.card {
-  background: #fff;
-  border: 1px solid #d9e2ec;
-  border-radius: 8px;
-  padding: 16px;
-  margin-bottom: 16px;
+/* ---- Page ---- */
+.container {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 28px 16px 64px;
 }
-.form-field { margin-bottom: 14px; }
-.form-field label { display: block; font-weight: 600; margin-bottom: 4px; }
-.input {
-  width: 100%;
-  padding: 10px;
-  font-size: 1rem;           /* 16px+ stops phones from zooming in on the box */
-  border: 1px solid #9aa5b1;
-  border-radius: 6px;
-}
-.input-error { border-color: #c81e1e; }
-.field-error { color: #c81e1e; margin: 4px 0 0; font-size: 0.9rem; }
 
-.button {
-  display: inline-block;
-  padding: 10px 16px;
-  font-size: 1rem;
-  color: #fff;
-  background: #1f3a5f;
-  border: none;
-  border-radius: 6px;
-  text-decoration: none;
-  cursor: pointer;
-}
-.button:hover { background: #2b4f7e; }
-.button-secondary { color: #1f3a5f; background: #fff; border: 1px solid #1f3a5f; }
-.button-secondary:hover { background: #e1effe; }
-
-/* ---- Exercise library ---- */
 .page-heading {
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
+  align-items: baseline;
   justify-content: space-between;
-  gap: 8px;
+  gap: 8px 16px;
 }
+.page-heading h1, .page-heading h2 { margin-bottom: 0.3em; }
+
+.flash {
+  padding: 10px 14px;
+  margin-bottom: 16px;
+  border-left: 4px solid var(--plate-blue);
+  border-radius: var(--radius-control);
+  background: var(--plate-blue-tint);
+}
+.flash-error { border-left-color: var(--plate-red); background: var(--plate-red-tint); }
+.flash-success { border-left-color: var(--green); background: var(--green-tint); }
+
+/* ---- Cards ---- */
+.card {
+  background: var(--white);
+  border: 1px solid var(--rubber);
+  border-radius: var(--radius-card);
+  padding: 18px;
+  margin-bottom: 16px;
+}
+/* A workout in progress: yellow edge, like the tape on a lifting platform. */
+.card-highlight {
+  border-color: var(--plate-yellow);
+  border-left-width: 6px;
+  background: var(--plate-yellow-tint);
+}
+.card-highlight p { margin-bottom: 0.6em; }
+
+/* ---- Forms ---- */
+.form-field { margin-bottom: 16px; }
+.form-field label {
+  display: block;
+  font-weight: 600;
+  font-size: 0.95rem;
+  margin-bottom: 4px;
+}
+.input {
+  width: 100%;
+  padding: 10px 12px;
+  font: inherit;
+  font-size: 1rem;           /* 16px+ stops phones from zooming in on the box */
+  color: var(--slate);
+  background: var(--white);
+  border: 1px solid var(--rubber-dark);
+  border-radius: var(--radius-control);
+}
+.input:hover { border-color: var(--steel); }
+.input:focus-visible { outline-offset: 0; border-color: var(--slate); }
+textarea.input { min-height: 110px; resize: vertical; }
+.input-error { border-color: var(--plate-red); background: #fffafa; }
+.field-error { color: var(--plate-red-dark); margin: 4px 0 0; font-size: 0.9rem; }
+
+.checkbox { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; }
+.checkbox input { width: 18px; height: 18px; accent-color: var(--plate-blue); }
+
 .filter-row {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));  /* side by side, stacked on phones */
-  gap: 0 12px;
+  gap: 0 14px;
 }
-textarea.input { min-height: 120px; resize: vertical; }
-.checkbox { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
-.actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+.number-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));  /* three small boxes, even on phones */
+  gap: 0 12px;
+  align-items: end;  /* boxes line up even when one label wraps onto two lines */
+}
 
-.exercise-list { list-style: none; margin: 0; padding: 0; }
+/* ---- Buttons ---- */
+.button {
+  display: inline-block;
+  padding: 9px 18px;
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: 0.01em;
+  color: #fff;
+  background: var(--plate-blue);
+  border: 2px solid var(--plate-blue);
+  border-radius: var(--radius-control);
+  text-decoration: none;
+  cursor: pointer;
+}
+.button:hover { color: #fff; background: var(--plate-blue-dark); border-color: var(--plate-blue-dark); }
+.button-secondary { color: var(--slate); background: transparent; border-color: var(--slate); }
+.button-secondary:hover { color: #fff; background: var(--slate); border-color: var(--slate); }
+.button-danger { background: var(--plate-red); border-color: var(--plate-red); }
+.button-danger:hover { background: var(--plate-red-dark); border-color: var(--plate-red-dark); }
+
+.small-button {
+  display: inline-block;
+  padding: 3px 10px;
+  font: inherit;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: var(--slate);
+  background: var(--white);
+  border: 1px solid var(--rubber-dark);
+  border-radius: var(--radius-control);
+  text-decoration: none;
+  cursor: pointer;
+}
+.small-button:hover { color: var(--slate); border-color: var(--slate); }
+.small-button:disabled { opacity: 0.35; cursor: default; border-color: var(--rubber-dark); }
+
+/* Help text under a button needs a little room. */
+.card .button + .muted, .card .button + p { margin: 12px 0 0; }
+
+.actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 16px; }
+
+/* ---- Lists of exercises, templates and workouts ---- */
+.exercise-list, .template-items { list-style: none; margin: 0 0 16px; padding: 0; }
 .exercise-item {
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
-  gap: 4px 10px;
-  padding: 12px;
+  gap: 2px 12px;
+  padding: 12px 16px;
   margin-bottom: 8px;
-  background: #fff;
-  border: 1px solid #d9e2ec;
-  border-radius: 8px;
+  background: var(--white);
+  border: 1px solid var(--rubber);
+  border-radius: var(--radius-card);
 }
-.exercise-item a { font-weight: 600; color: #1f3a5f; }
+.exercise-item:hover { border-color: var(--rubber-dark); }
+.exercise-item > a, .item-main > a {
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: var(--slate);
+  text-decoration: none;
+}
+.exercise-item > a:hover, .item-main > a:hover { color: var(--plate-blue); text-decoration: underline; }
+.exercise-item .muted { font-size: 0.95rem; }
+/* Facts about an item (muscle group, equipment...) sit side by side with a gap. */
+.meta { display: inline-flex; flex-wrap: wrap; gap: 0 14px; }
+
+.template-items .exercise-item { justify-content: space-between; align-items: center; }
+.item-main { flex: 1 1 220px; }
+.item-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
 
 .badge {
   display: inline-block;
-  padding: 1px 8px;
+  padding: 1px 9px;
   font-size: 0.8rem;
+  font-weight: 600;
   border-radius: 999px;
-  color: #1f3a5f;
-  background: #e1effe;
+  color: var(--plate-blue-dark);
+  background: var(--plate-blue-tint);
+  vertical-align: middle;
 }
-.badge-muted { color: #3e4c59; background: #e4e7eb; }
+.badge-muted { color: var(--steel); background: #eceeec; }
+.badge-live { color: var(--slate); background: var(--plate-yellow); }
 
+/* ---- Details (exercise and workout summaries) ---- */
 .details {
   display: grid;
   grid-template-columns: max-content 1fr;
-  gap: 6px 16px;
+  gap: 6px 20px;
   margin: 0 0 12px;
 }
-.details dt { font-weight: 600; }
+.details dt { font-weight: 600; color: var(--steel); }
 .details dd { margin: 0; }
 .instructions { white-space: pre-line; }
-
-/* ---- Workout templates ---- */
-.template-items { list-style: none; margin: 0 0 16px; padding: 0; }
-.template-items .exercise-item { justify-content: space-between; align-items: center; }
-.item-main { flex: 1 1 200px; }
-.item-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
-.small-button {
-  display: inline-block;
-  padding: 4px 10px;
-  font: inherit;
-  font-size: 0.9rem;
-  color: #1f3a5f;
-  background: #fff;
-  border: 1px solid #9aa5b1;
-  border-radius: 6px;
-  text-decoration: none;
-  cursor: pointer;
-}
-.small-button:hover { background: #e1effe; }
-.small-button:disabled { opacity: 0.4; cursor: default; background: #fff; }
-.number-row {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));  /* three small number boxes, even on phones */
-  gap: 0 12px;
-}
-.button-danger { background: #c81e1e; }
-.button-danger:hover { background: #9b1c1c; }
+.card h2:first-child { margin-top: 0; }
 
 /* ---- Workout sessions ---- */
-.card-highlight { border-color: #1f3a5f; background: #e1effe; }
-.session-exercise h2 { margin: 0; font-size: 1.15rem; }
-.sets { width: 100%; border-collapse: collapse; margin: 8px 0 12px; }
-.sets th, .sets td { text-align: left; padding: 6px 4px; border-bottom: 1px solid #e4e7eb; }
-.sets th { font-size: 0.85rem; color: #616e7c; font-weight: 600; }
-.set-actions { display: flex; flex-wrap: wrap; gap: 6px; justify-content: flex-end; }
-.set-notes td { border-bottom: 1px solid #e4e7eb; padding-top: 0; }
-.finish-bar { margin: 16px 0 32px; }
+.session-exercise .page-heading { flex-wrap: nowrap; align-items: flex-start; }
+.session-exercise .page-heading h2 { margin: 0; font-size: 1.4rem; }
+.session-exercise > h2 { margin: 0 0 4px; font-size: 1.4rem; }
 
-/* The header has several links now: let them wrap onto a second line on phones. */
-.site-header { flex-wrap: wrap; gap: 8px; }
-.nav { flex-wrap: wrap; gap: 8px 16px; }
+/* The log of sets: big numbers you can read at arm's length between sets. */
+.sets { width: 100%; border-collapse: collapse; margin: 10px 0 16px; }
+.sets th, .sets td { text-align: left; padding: 6px; border-bottom: 1px solid var(--rubber); }
+.sets th { font-size: 0.85rem; font-weight: 600; color: var(--steel); }
+.sets td { vertical-align: middle; }
+.sets .num {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.2;
+}
+.sets .set-no { color: var(--steel); font-variant-numeric: tabular-nums; width: 3em; }
+/* Kept as a normal table cell (not flex) so the row's bottom line stays unbroken. */
+.sets td.set-actions { text-align: right; white-space: nowrap; }
+.set-actions .inline { margin-left: 4px; }
+.set-notes td { padding-top: 0; font-size: 0.95rem; }
+
+.finish-bar {
+  margin: 24px 0 0;
+  padding-top: 20px;
+  border-top: 1px solid var(--rubber);
+}
+
+/* ---- Home page ---- */
+.hero { padding: 24px 0 8px; }
+.hero h1 { font-size: clamp(2.6rem, 9vw, 4rem); line-height: 1; margin-bottom: 0.3em; }
+.hero p { font-size: 1.2rem; color: var(--steel); }
+
+@media (max-width: 480px) {
+  h1 { font-size: 2rem; }
+  .container { padding-top: 20px; }
+  .card { padding: 14px; }
+}
+.hero .button { margin-right: 12px; }
