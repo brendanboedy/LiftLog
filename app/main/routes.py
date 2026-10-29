@@ -1,10 +1,11 @@
 """Pages for the main blueprint."""
 from flask import jsonify, render_template
-from flask_login import login_required
+from flask_login import current_user, login_required
 from sqlalchemy import text
 
 from app.extensions import db
 from app.main import bp
+from app.models import WorkoutSession
 
 
 @bp.route("/")
@@ -18,10 +19,10 @@ def index():
 def dashboard():
     """The logged-in user's home page. @login_required sends visitors to the login page (NFR-3).
 
-    For now it just greets the user; workout templates, sessions and history
-    will be linked from here as they are built.
+    Links to the user's templates, exercises and history, and to their
+    in-progress workout if they have one.
     """
-    return render_template("main/dashboard.html")
+    return render_template("main/dashboard.html", active=WorkoutSession.active_for(current_user))
 
 
 @bp.route("/health")

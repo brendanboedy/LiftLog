@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% from "_form_field.html" import field %}
+
+{% block title %}Finish {{ workout.name }} · LiftLog{% endblock %}
+
+{% block content %}
+  <h1>Finish {{ workout.name }}</h1>
+  <p class="muted">
+    You logged {{ workout.set_count }} set{{ "" if workout.set_count == 1 else "s" }}
+    across {{ workout.items|length }} exercise{{ "" if workout.items|length == 1 else "s" }}.
+    After this the workout moves to your history and can't be changed.
+  </p>
+
+  <form method="post" novalidate class="card">
+    {{ form.hidden_tag() }}
+    <div class="filter-row">
+      {{ field(form.date_performed) }}
+      {{ field(form.duration_minutes, min="1", inputmode="numeric") }}
+    </div>
+    {{ field(form.energy_rating) }}
+    {{ field(form.notes) }}
+    <div class="actions">
+      {{ form.submit(class="button") }}
+      <a href="{{ url_for('workout_sessions.detail', session_id=workout.id) }}">Back to workout</a>
+    </div>
+  </form>
+{% endblock %}

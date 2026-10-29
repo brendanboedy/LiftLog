@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}{{ workout.name }} · LiftLog{% endblock %}
+
+{% block content %}
+  <p><a href="{{ url_for('workout_sessions.history') }}">&larr; Workout history</a></p>
+
+  <div class="page-heading">
+    <h1>{{ workout.name }}</h1>
+    <a href="{{ url_for('workout_sessions.delete', session_id=workout.id) }}">Delete</a>
+  </div>
+
+  <div class="card">
+    <dl class="details">
+      <dt>Date</dt><dd>{{ workout.date_performed.strftime("%A, %B %d, %Y") }}</dd>
+      <dt>Duration</dt><dd>{{ workout.duration_minutes ~ " min" if workout.duration_minutes else "Not recorded" }}</dd>
+      <dt>Energy</dt><dd>{{ workout.energy_rating ~ " / 5" if workout.energy_rating else "Not recorded" }}</dd>
+      <dt>Template</dt>
+      <dd>
+        {% if workout.template %}
+          <a href="{{ url_for('workout_templates.detail', template_id=workout.template.id) }}">{{ workout.template.name }}</a>
+        {% else %}
+          <span class="muted">None</span>
+        {% endif %}
+      </dd>
+    </dl>
+    {% if workout.notes %}<p class="instructions">{{ workout.notes }}</p>{% endif %}
+  </div>
+
+  {% for item in workout.items %}
+    <section class="card session-exercise">
+      <h2>{{ loop.index }}. {{ item.exercise.name }}</h2>
+      {% if item.target %}<p class="muted">Target: {{ item.target }} reps</p>{% endif %}
+      {% if item.sets %}
+        <table class="sets">
+          <thead><tr><th>Set</th><th>Weight (lb)</th><th>Reps</th><th>Notes</th></tr></thead>
+          <tbody>
+            {% for entry in item.sets %}
+              <tr>
+                <td>{{ entry.set_number }}</td>
+                <td>{{ entry.weight_text }}</td>
+                <td>{{ entry.reps }}</td>
+                <td class="muted">{{ entry.notes or "" }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% else %}
+        <p class="muted">No sets logged.</p>
+      {% endif %}
+    </section>
+  {% else %}
+    <p class="muted">No exercises were logged in this workout.</p>
+  {% endfor %}
+{% endblock %}

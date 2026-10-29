@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% from "_form_field.html" import field %}
+
+{% block title %}Edit set · LiftLog{% endblock %}
+
+{% block content %}
+  <h1>{{ entry.session_exercise.exercise.name }}, set {{ entry.set_number }}</h1>
+  <p class="muted">In {{ workout.name }}</p>
+
+  <form method="post" novalidate class="card">
+    {{ form.hidden_tag() }}
+    <div class="number-row">
+      {{ field(form.weight, type="number", step="any", min="0", inputmode="decimal") }}
+      {{ field(form.reps, min="1", inputmode="numeric") }}
+      {{ field(form.notes, autocomplete="off") }}
+    </div>
+    <div class="actions">
+      {{ form.submit(class="button") }}
+      <a href="{{ url_for('workout_sessions.detail', session_id=workout.id) }}">Cancel</a>
+    </div>
+  </form>
+{% endblock %}

@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{# In progress = cancelling the workout (FR-28); completed = deleting it from history (FR-31) #}
+{% macro verb() %}{{ "Delete" if workout.completed else "Cancel" }}{% endmacro %}
+
+{% block title %}{{ verb() }} {{ workout.name }} · LiftLog{% endblock %}
+
+{% block content %}
+  <h1>{{ verb() }} {{ workout.name }}?</h1>
+  <div class="card">
+    <p>
+      This permanently deletes the workout and its
+      {{ workout.set_count }} logged set{{ "" if workout.set_count == 1 else "s" }}.
+      Your templates and exercises are not affected.
+    </p>
+    <div class="actions">
+      <form class="inline" method="post">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit" class="button button-danger">{{ "Delete workout" if workout.completed else "Cancel workout" }}</button>
+      </form>
+      <a href="{{ url_for('workout_sessions.detail', session_id=workout.id) }}">Keep it</a>
+    </div>
+  </div>
+{% endblock %}

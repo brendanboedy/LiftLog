@@ -1,9 +1,10 @@
 {# Reusable form field: label, input box, and any error messages under it.
-   Use it with:  {% from "_form_field.html" import field %}  then  {{ field(form.username) }} #}
+   Use it with:  {% from "_form_field.html" import field %}  then  {{ field(form.username) }}
+   Extra HTML attributes pass straight through, e.g. {{ field(form.weight, type="number", step="any") }} #}
 {% macro field(f, autocomplete="") %}
   <div class="form-field">
     {{ f.label }}
-    {{ f(class="input" ~ (" input-error" if f.errors else ""), autocomplete=autocomplete) }}
+    {{ f(class="input" ~ (" input-error" if f.errors else ""), autocomplete=autocomplete, **kwargs) }}
     {% for error in f.errors %}
       <p class="field-error">{{ error }}</p>
     {% endfor %}

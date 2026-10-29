@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}Workout history · LiftLog{% endblock %}
+
+{% block content %}
+  <h1>Workout history</h1>
+
+  {% if active %}
+    <div class="card card-highlight">
+      <p><strong>{{ active.name }}</strong> is in progress.</p>
+      <a class="button" href="{{ url_for('workout_sessions.detail', session_id=active.id) }}">Continue workout</a>
+    </div>
+  {% else %}
+    <div class="actions">
+      <a class="button" href="{{ url_for('workout_templates.list_templates') }}">Start from a template</a>
+      <form class="inline" method="post" action="{{ url_for('workout_sessions.start') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit" class="button button-secondary">Start an empty workout</button>
+      </form>
+    </div>
+  {% endif %}
+
+  <h2>Completed workouts</h2>
+  {% if workouts %}
+    <ul class="exercise-list">
+      {% for workout in workouts %}
+        <li class="exercise-item">
+          <a href="{{ url_for('workout_sessions.detail', session_id=workout.id) }}">{{ workout.name }}</a>
+          <span class="muted">
+            {{ workout.date_performed.strftime("%b %d, %Y") }} ·
+            {{ workout.items|length }} exercise{{ "" if workout.items|length == 1 else "s" }} ·
+            {{ workout.set_count }} set{{ "" if workout.set_count == 1 else "s" }}
+            {% if workout.duration_minutes %}· {{ workout.duration_minutes }} min{% endif %}
+          </span>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p class="muted">No completed workouts yet. Finished workouts show up here, newest first.</p>
+  {% endif %}
+{% endblock %}
