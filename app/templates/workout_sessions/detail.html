@@ -37,9 +37,9 @@
           <tbody>
             {% for entry in item.sets %}
               <tr>
-                <td>{{ entry.set_number }}</td>
-                <td>{{ entry.weight_text }}</td>
-                <td>{{ entry.reps }}</td>
+                <td class="set-no">{{ entry.set_number }}</td>
+                <td class="num">{{ entry.weight_text }}</td>
+                <td class="num">{{ entry.reps }}</td>
                 <td class="muted">{{ entry.notes or "" }}</td>
               </tr>
             {% endfor %}

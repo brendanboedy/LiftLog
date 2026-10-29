@@ -13,9 +13,9 @@
       {% for template in templates %}
         <li class="exercise-item">
           <a href="{{ url_for('workout_templates.detail', template_id=template.id) }}">{{ template.name }}</a>
-          <span class="muted">
-            {{ template.difficulty }} ·
-            {{ template.items|length }} exercise{{ "" if template.items|length == 1 else "s" }}
+          <span class="muted meta">
+            <span>{{ template.difficulty }}</span>
+            <span>{{ template.items|length }} exercise{{ "" if template.items|length == 1 else "s" }}</span>
           </span>
         </li>
       {% endfor %}

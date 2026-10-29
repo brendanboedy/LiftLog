@@ -52,7 +52,7 @@
       {% for exercise in exercises %}
         <li class="exercise-item">
           <a href="{{ url_for('exercises.detail', exercise_id=exercise.id) }}">{{ exercise.name }}</a>
-          <span class="muted">{{ exercise.muscle_group }} · {{ exercise.equipment_type }}</span>
+          <span class="muted meta"><span>{{ exercise.muscle_group }}</span><span>{{ exercise.equipment_type }}</span></span>
           {% if not exercise.is_predefined %}<span class="badge">Custom</span>{% endif %}
           {% if exercise.is_archived %}<span class="badge badge-muted">Archived</span>{% endif %}
         </li>
