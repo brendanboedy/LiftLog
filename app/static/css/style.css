@@ -82,3 +82,56 @@ body {
   cursor: pointer;
 }
 .button:hover { background: #2b4f7e; }
+.button-secondary { color: #1f3a5f; background: #fff; border: 1px solid #1f3a5f; }
+.button-secondary:hover { background: #e1effe; }
+
+/* ---- Exercise library ---- */
+.page-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.filter-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));  /* side by side, stacked on phones */
+  gap: 0 12px;
+}
+textarea.input { min-height: 120px; resize: vertical; }
+.checkbox { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
+.actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+
+.exercise-list { list-style: none; margin: 0; padding: 0; }
+.exercise-item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 10px;
+  padding: 12px;
+  margin-bottom: 8px;
+  background: #fff;
+  border: 1px solid #d9e2ec;
+  border-radius: 8px;
+}
+.exercise-item a { font-weight: 600; color: #1f3a5f; }
+
+.badge {
+  display: inline-block;
+  padding: 1px 8px;
+  font-size: 0.8rem;
+  border-radius: 999px;
+  color: #1f3a5f;
+  background: #e1effe;
+}
+.badge-muted { color: #3e4c59; background: #e4e7eb; }
+
+.details {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 6px 16px;
+  margin: 0 0 12px;
+}
+.details dt { font-weight: 600; }
+.details dd { margin: 0; }
+.instructions { white-space: pre-line; }

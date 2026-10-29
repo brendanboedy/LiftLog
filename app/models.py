@@ -1,6 +1,6 @@
 """Database tables, written as Python classes (SQLAlchemy "models").
 
-Based on the team's ER model. Only the User table exists so far; Exercise,
+Based on the team's ER model. User and Exercise exist so far;
 WorkoutTemplate, WorkoutSession and the others will be added here as those
 features are built.
 """
@@ -53,6 +53,97 @@ class User(UserMixin, db.Model):
 
     def __repr__(self):
         return f"<User {self.username}>"
+
+
+# Fixed lists of choices for exercise details. The forms and the search filters
+# use these, so every exercise is labelled the same way and filtering works.
+MUSCLE_GROUPS = [
+    "Chest", "Back", "Shoulders", "Biceps", "Triceps", "Forearms", "Core",
+    "Quadriceps", "Hamstrings", "Glutes", "Calves", "Full Body",
+]
+EQUIPMENT_TYPES = [
+    "Barbell", "Dumbbell", "Machine", "Cable", "Bodyweight", "Kettlebell",
+    "Resistance Band", "Other",
+]
+MOVEMENT_TYPES = ["Compound", "Isolation"]
+DIFFICULTIES = ["Beginner", "Intermediate", "Advanced"]
+
+
+class Exercise(db.Model):
+    """One exercise, e.g. "Barbell Bench Press" (ER model: Exercise).
+
+    Two kinds share this table:
+    - predefined exercises, loaded by the team with `flask --app run seed-exercises`
+      (created_by is empty) - every user sees these (FR-7, FR-8);
+    - custom exercises a user made (created_by is that user's id) - only that
+      user sees them (FR-11).
+
+    created_by is not in the original ER model; it was added for FR-11
+    (open team decision #2 in the RD).
+    """
+
+    __tablename__ = "exercises"
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False, index=True)
+    muscle_group = db.Column(db.String(30), nullable=False)
+    equipment_type = db.Column(db.String(30), nullable=False)
+    movement_type = db.Column(db.String(20), nullable=False)
+    difficulty = db.Column(db.String(20), nullable=False)
+    instructions = db.Column(db.Text)
+    # Archived exercises are hidden from the library and (later) from the
+    # "add exercise" lists, but stay in old templates and sessions (FR-13).
+    # We archive instead of deleting so past workouts never lose an exercise.
+    is_archived = db.Column(db.Boolean, nullable=False, default=False, server_default=db.false())
+    # Empty (NULL) = predefined. If the user's account is deleted, their
+    # custom exercises go with it (FR-6).
+    created_by = db.Column(
+        db.Integer,
+        db.ForeignKey("users.id", ondelete="CASCADE", name="fk_exercises_created_by_users"),
+        index=True,
+    )
+    created_at = db.Column(db.DateTime(timezone=True), nullable=False, default=utc_now)
+
+    owner = db.relationship(
+        "User",
+        backref=db.backref("custom_exercises", cascade="all, delete-orphan", passive_deletes=True),
+    )
+
+    @property
+    def is_predefined(self):
+        return self.created_by is None
+
+    def is_owned_by(self, user):
+        """True if `user` created this custom exercise."""
+        return self.created_by is not None and self.created_by == user.id
+
+    def is_visible_to(self, user):
+        """Everyone sees predefined exercises; custom ones only their creator (FR-11)."""
+        return self.is_predefined or self.is_owned_by(user)
+
+    @staticmethod
+    def visible_to(user):
+        """A query for every exercise `user` may see. Add .where(...) to narrow it down."""
+        return db.select(Exercise).where(
+            db.or_(Exercise.created_by.is_(None), Exercise.created_by == user.id)
+        )
+
+    @staticmethod
+    def name_taken(name, user, exclude_id=None):
+        """True if `user` can already see an exercise with this name (ignoring case).
+
+        Stops a user from making a custom "bench press" that looks identical
+        to the predefined "Bench Press" in their lists.
+        """
+        query = Exercise.visible_to(user).where(
+            db.func.lower(Exercise.name) == name.strip().lower()
+        )
+        if exclude_id is not None:
+            query = query.where(Exercise.id != exclude_id)
+        return db.session.execute(query.limit(1)).first() is not None
+
+    def __repr__(self):
+        return f"<Exercise {self.name}>"
 
 
 @login_manager.user_loader

@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block title %}Exercises · LiftLog{% endblock %}
+
+{% block content %}
+  <div class="page-heading">
+    <h1>Exercise library</h1>
+    <a class="button" href="{{ url_for('exercises.create') }}">New custom exercise</a>
+  </div>
+
+  {# A plain GET form: the filters end up in the address (?q=...&muscle_group=...),
+     so no CSRF token is needed - nothing is saved. #}
+  <form method="get" class="card filters" role="search">
+    <div class="form-field">
+      <label for="q">Search by name</label>
+      <input class="input" type="search" id="q" name="q" value="{{ search }}" placeholder="e.g. squat">
+    </div>
+    <div class="filter-row">
+      <div class="form-field">
+        <label for="muscle_group">Muscle group</label>
+        <select class="input" id="muscle_group" name="muscle_group">
+          <option value="">All</option>
+          {% for group in muscle_groups %}
+            <option value="{{ group }}" {% if group == muscle_group %}selected{% endif %}>{{ group }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-field">
+        <label for="equipment_type">Equipment</label>
+        <select class="input" id="equipment_type" name="equipment_type">
+          <option value="">All</option>
+          {% for equipment in equipment_types %}
+            <option value="{{ equipment }}" {% if equipment == equipment_type %}selected{% endif %}>{{ equipment }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+    <label class="checkbox">
+      <input type="checkbox" name="archived" value="1" {% if show_archived %}checked{% endif %}>
+      Show my archived exercises
+    </label>
+    <div class="actions">
+      <button type="submit" class="button">Search</button>
+      <a href="{{ url_for('exercises.list_exercises') }}">Clear</a>
+    </div>
+  </form>
+
+  <p class="muted">{{ exercises|length }} exercise{{ "" if exercises|length == 1 else "s" }}</p>
+
+  {% if exercises %}
+    <ul class="exercise-list">
+      {% for exercise in exercises %}
+        <li class="exercise-item">
+          <a href="{{ url_for('exercises.detail', exercise_id=exercise.id) }}">{{ exercise.name }}</a>
+          <span class="muted">{{ exercise.muscle_group }} · {{ exercise.equipment_type }}</span>
+          {% if not exercise.is_predefined %}<span class="badge">Custom</span>{% endif %}
+          {% if exercise.is_archived %}<span class="badge badge-muted">Archived</span>{% endif %}
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>No exercises match. Try a different search, or
+      <a href="{{ url_for('exercises.create') }}">create a custom exercise</a>.</p>
+  {% endif %}
+{% endblock %}

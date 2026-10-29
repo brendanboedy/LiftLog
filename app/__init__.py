@@ -43,4 +43,11 @@ def create_app(config_class=Config):
     from app.auth import bp as auth_bp
     app.register_blueprint(auth_bp)
 
+    from app.exercises import bp as exercises_bp
+    app.register_blueprint(exercises_bp)
+
+    # Adds the `flask --app run seed-exercises` command (loads predefined exercises).
+    from app.exercises.seed import seed_exercises_command
+    app.cli.add_command(seed_exercises_command)
+
     return app

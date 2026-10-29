@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% from "_form_field.html" import field %}
+
+{# Used for both "new" (exercise is None) and "edit" #}
+{% macro heading() %}{{ "Edit " ~ exercise.name if exercise else "New custom exercise" }}{% endmacro %}
+
+{% block title %}{{ heading() }} · LiftLog{% endblock %}
+
+{% block content %}
+  <h1>{{ heading() }}</h1>
+  {% if not exercise %}
+    <p class="muted">Only you will see the exercises you create.</p>
+  {% endif %}
+
+  <form method="post" novalidate class="card">
+    {{ form.hidden_tag() }}  {# the hidden CSRF token #}
+    {{ field(form.name, autocomplete="off") }}
+    <div class="filter-row">
+      {{ field(form.muscle_group) }}
+      {{ field(form.equipment_type) }}
+    </div>
+    <div class="filter-row">
+      {{ field(form.movement_type) }}
+      {{ field(form.difficulty) }}
+    </div>
+    {{ field(form.instructions) }}
+    <div class="actions">
+      {{ form.submit(class="button") }}
+      <a href="{{ url_for('exercises.detail', exercise_id=exercise.id) if exercise else url_for('exercises.list_exercises') }}">Cancel</a>
+    </div>
+  </form>
+{% endblock %}
