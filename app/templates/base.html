@@ -14,9 +14,9 @@
 <body>
   <header class="site-header">
     <a class="logo" href="{{ url_for('main.index') }}">LiftLog</a>
-    <nav class="nav">
+    <nav class="nav" aria-label="Main navigation">
       {% if current_user.is_authenticated %}
-        {# aria-current marks the section you're in; the CSS underlines it in yellow #}
+        <a href="{{ url_for('main.dashboard') }}" {% if request.endpoint == 'main.dashboard' %}aria-current="page"{% endif %}>Overview</a>
         <a href="{{ url_for('workout_sessions.history') }}" {% if request.blueprint == 'workout_sessions' %}aria-current="page"{% endif %}>History</a>
         <a href="{{ url_for('workout_templates.list_templates') }}" {% if request.blueprint == 'workout_templates' %}aria-current="page"{% endif %}>Templates</a>
         <a href="{{ url_for('exercises.list_exercises') }}" {% if request.blueprint == 'exercises' %}aria-current="page"{% endif %}>Exercises</a>
@@ -43,5 +43,6 @@
 
     {% block content %}{% endblock %}
   </main>
+  <footer class="site-footer">LIFTLOG &nbsp; / &nbsp; One set stronger.</footer>
 </body>
 </html>

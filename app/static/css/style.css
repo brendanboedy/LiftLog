@@ -1,38 +1,27 @@
-/* LiftLog styles.
-
-   Look: "chalk and iron". A cool chalk-white page, slate ink, and the colours
-   of competition weight plates (blue, red, yellow) used for meaning:
-   blue = the main action, red = deleting, yellow = what's happening now
-   (a workout in progress, keyboard focus).
-
-   Type: Barlow Condensed (headings, buttons, numbers - like gym signage)
-   and Barlow (body text). Loaded from Google Fonts in base.html; if they
-   can't load, the system font is used instead.
-*/
-
+/* Midnight Volt: charcoal surfaces, electric lime actions, and clear workout data. */
 :root {
-  --chalk: #f6f7f4;      /* page background */
-  --white: #ffffff;      /* cards and inputs */
-  --slate: #1c2b36;      /* main text, header */
-  --steel: #5e6b74;      /* secondary text */
-  --rubber: #dadfdb;     /* borders and lines */
-  --rubber-dark: #b9c1bc;
-  --plate-blue: #1e56c8; /* main buttons and links */
-  --plate-blue-dark: #17439c;
-  --plate-blue-tint: #e6edfb;
-  --plate-red: #c8282e;  /* delete / cancel */
-  --plate-red-dark: #a11f24;
-  --plate-red-tint: #fbe8e8;
-  --plate-yellow: #f2b705; /* in progress, focus */
-  --plate-yellow-tint: #fff5d6;
-  --green: #1f7a4d;
-  --green-tint: #e3f3ea;
+  --chalk: #111512;      /* page background */
+  --white: #1d231e;      /* cards and inputs */
+  --slate: #f4f6ed;      /* main text, header */
+  --steel: #b0b8ac;      /* secondary text */
+  --rubber: #303a31;     /* borders and lines */
+  --rubber-dark: #4d5b4e;
+  --plate-blue: #d2fc52; /* main buttons and links */
+  --plate-blue-dark: #e0ff88;
+  --plate-blue-tint: #2b371e;
+  --plate-red: #ff8d8d;  /* delete / cancel */
+  --plate-red-dark: #ffb0b0;
+  --plate-red-tint: #392323;
+  --plate-yellow: #d2fc52; /* in progress, focus */
+  --plate-yellow-tint: #252f1e;
+  --green: #a5dfac;
+  --green-tint: #213427;
 
   --font-body: "Barlow", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  --font-display: "Barlow Condensed", "Arial Narrow", system-ui, sans-serif;
+  --font-display: "Barlow", system-ui, sans-serif;
 
-  --radius-card: 10px;
-  --radius-control: 6px;
+  --radius-card: 18px;
+  --radius-control: 9px;
 }
 
 * { box-sizing: border-box; }
@@ -61,7 +50,7 @@ a:hover { color: var(--plate-blue-dark); }
 
 .muted { color: var(--steel); }
 
-/* Keyboard focus: a thick yellow ring that's easy to see on any background. */
+/* High contrast keyboard focus. */
 :focus-visible {
   outline: 3px solid var(--plate-yellow);
   outline-offset: 2px;
@@ -88,7 +77,7 @@ a:hover { color: var(--plate-blue-dark); }
   font-size: 1.6rem;
   letter-spacing: 0.01em;
 }
-/* A small weight plate drawn in CSS: blue rim, slate hole. */
+/* Brand mark, refined in the theme details below. */
 .logo::before {
   content: "";
   width: 22px;
@@ -155,7 +144,7 @@ a:hover { color: var(--plate-blue-dark); }
   padding: 18px;
   margin-bottom: 16px;
 }
-/* A workout in progress: yellow edge, like the tape on a lifting platform. */
+/* Highlight an in-progress workout. */
 .card-highlight {
   border-color: var(--plate-yellow);
   border-left-width: 6px;
@@ -184,7 +173,7 @@ a:hover { color: var(--plate-blue-dark); }
 .input:hover { border-color: var(--steel); }
 .input:focus-visible { outline-offset: 0; border-color: var(--slate); }
 textarea.input { min-height: 110px; resize: vertical; }
-.input-error { border-color: var(--plate-red); background: #fffafa; }
+.input-error { border-color: var(--plate-red); background: #392323; }
 .field-error { color: var(--plate-red-dark); margin: 4px 0 0; font-size: 0.9rem; }
 
 .checkbox { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; }
@@ -285,7 +274,7 @@ textarea.input { min-height: 110px; resize: vertical; }
   background: var(--plate-blue-tint);
   vertical-align: middle;
 }
-.badge-muted { color: var(--steel); background: #eceeec; }
+.badge-muted { color: var(--steel); background: #303a31; }
 .badge-live { color: var(--slate); background: var(--plate-yellow); }
 
 /* ---- Details (exercise and workout summaries) ---- */
@@ -340,3 +329,50 @@ textarea.input { min-height: 110px; resize: vertical; }
   .card { padding: 14px; }
 }
 .hero .button { margin-right: 12px; }
+
+/* Midnight Volt finishing details. */
+:root { color-scheme: dark; }
+body { background: radial-gradient(ellipse at 90% 0, #20291b 0, transparent 42%), var(--chalk); }
+h1 { letter-spacing: -0.045em; font-size: clamp(2rem, 5vw, 3rem); }
+h2, h3 { letter-spacing: -0.025em; }
+.site-header { background: #111512; border-bottom: 1px solid var(--rubber); padding: 20px max(24px, calc((100% - 1120px) / 2)); }
+.logo { text-transform: uppercase; letter-spacing: -0.04em; }
+.logo::before { background: var(--plate-blue); border-radius: 5px; width: 24px; height: 24px; clip-path: polygon(0 65%, 60% 5%, 25% 5%, 25% 0, 100% 0, 100% 75%, 95% 75%, 95% 40%, 35% 100%); }
+.nav { font-size: 0.95rem; gap: 8px 22px; }
+.nav a { color: var(--steel); }
+.nav a:hover, .nav a[aria-current="page"] { color: var(--slate); }
+.container { max-width: 1040px; padding: 48px 24px 80px; }
+.card { padding: 26px; box-shadow: 0 8px 28px #00000016; }
+.card-highlight { border-left-width: 3px; }
+.input { background: #151b16; padding: 12px 14px; }
+.button { color: #17200d; font-size: 1rem; padding: 12px 20px; }
+.button:hover { color: #17200d; }
+.button-secondary { color: var(--slate); border-color: var(--rubber-dark); }
+.button-secondary:hover { color: var(--slate); background: #303a31; border-color: var(--steel); }
+.button-danger, .button-danger:hover { color: #301111; }
+.badge-live { color: #17200d; }
+.exercise-item { padding: 18px 20px; }
+.exercise-item > a, .item-main > a { font-size: 1.15rem; }
+.eyebrow { color: var(--plate-blue); text-transform: uppercase; font-size: 0.75rem; font-weight: 600; letter-spacing: 0.16em; margin-bottom: 18px; }
+.hero { padding: 36px 0 24px; }
+.hero h1 { max-width: 12ch; font-size: clamp(3.5rem, 9vw, 6rem); letter-spacing: -0.055em; }
+.hero .eyebrow { font-size: 0.75rem; color: var(--plate-blue); }
+.hero .actions { margin-top: 28px; }
+.dashboard-intro { padding: 8px 0 24px; }
+.dashboard-grid { display: grid; grid-template-columns: 1.4fr 1fr; gap: 20px; }
+.dashboard-grid .card { margin: 0; display: flex; flex-direction: column; align-items: flex-start; }
+.dashboard-grid .card h2 { margin-top: 0; font-size: 1.8rem; }
+.dashboard-grid .card .button { margin-top: auto; }
+.dashboard-grid .card:last-child { grid-column: 1 / -1; flex-direction: row; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }
+.dashboard-grid .card:last-child p { margin: 0; }
+.site-footer { max-width: 992px; margin: 0 auto; padding: 20px 24px 32px; border-top: 1px solid var(--rubber); color: var(--steel); font-size: 0.8rem; letter-spacing: 0.06em; }
+@media (max-width: 600px) {
+  .site-header { padding: 18px 20px; }
+  .nav { width: 100%; gap: 8px 16px; font-size: 0.9rem; }
+  .container { padding: 30px 18px 56px; }
+  .dashboard-grid { grid-template-columns: 1fr; }
+  .card { padding: 20px; }
+  .hero { padding-top: 18px; }
+  .details { grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr); gap: 8px 12px; }
+  .details dd { overflow-wrap: anywhere; }
+}
