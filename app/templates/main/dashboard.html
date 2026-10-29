@@ -3,17 +3,33 @@
 {% block title %}My LiftLog{% endblock %}
 
 {% block content %}
-  <h1>Hi, {{ current_user.username }}!</h1>
-  <p>This is your LiftLog home.</p>
+  <div class="dashboard-intro">
+    <p class="eyebrow">Your training, dialed in</p>
+    <h1>Hi, {{ current_user.username }}!</h1>
+    <p class="muted">Make your next set count.</p>
+  </div>
   {% if active %}
     <div class="card card-highlight">
       <p><strong>{{ active.name }}</strong> is in progress.</p>
       <a class="button" href="{{ url_for('workout_sessions.detail', session_id=active.id) }}">Continue workout</a>
     </div>
   {% endif %}
-  <div class="actions">
-    <a class="button" href="{{ url_for('workout_sessions.history') }}">Workout history</a>
-    <a class="button" href="{{ url_for('workout_templates.list_templates') }}">My workout templates</a>
-    <a class="button button-secondary" href="{{ url_for('exercises.list_exercises') }}">Browse the exercise library</a>
+  <div class="dashboard-grid">
+    <section class="card">
+      <p class="eyebrow">Ready when you are</p>
+      <h2>Your next workout starts here.</h2>
+      <p class="muted">Build a routine or jump into one of your saved templates.</p>
+      <a class="button" href="{{ url_for('workout_templates.list_templates') }}">My workout templates &rarr;</a>
+    </section>
+    <section class="card">
+      <p class="eyebrow">Every session counts</p>
+      <h2>Your training journal.</h2>
+      <p class="muted">Revisit your workouts, sets, and the work you've put in.</p>
+      <a class="button button-secondary" href="{{ url_for('workout_sessions.history') }}">Workout history &rarr;</a>
+    </section>
+    <section class="card">
+      <div><h2>Find your next movement.</h2><p class="muted">Explore exercises to round out your routine.</p></div>
+      <a class="button button-secondary" href="{{ url_for('exercises.list_exercises') }}">Browse the exercise library &rarr;</a>
+    </section>
   </div>
 {% endblock %}
