@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% from "_form_field.html" import field %}
+
+{# Used for both "new" (template is None) and "edit details" #}
+{% macro heading() %}{{ "Edit " ~ template.name if template else "New workout template" }}{% endmacro %}
+
+{% block title %}{{ heading() }} · LiftLog{% endblock %}
+
+{% block content %}
+  <h1>{{ heading() }}</h1>
+  {% if not template %}
+    <p class="muted">Give it a name first. You'll add exercises on the next page.</p>
+  {% endif %}
+
+  <form method="post" novalidate class="card">
+    {{ form.hidden_tag() }}
+    {{ field(form.name, autocomplete="off") }}
+    {{ field(form.description) }}
+    {{ field(form.difficulty) }}
+    <div class="actions">
+      {{ form.submit(class="button") }}
+      <a href="{{ url_for('workout_templates.detail', template_id=template.id) if template else url_for('workout_templates.list_templates') }}">Cancel</a>
+    </div>
+  </form>
+{% endblock %}

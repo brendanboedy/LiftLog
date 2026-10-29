@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block title %}Delete {{ template.name }} · LiftLog{% endblock %}
+
+{% block content %}
+  <h1>Delete {{ template.name }}?</h1>
+  <div class="card">
+    <p>This permanently deletes the template and its list of
+      {{ template.items|length }} exercise{{ "" if template.items|length == 1 else "s" }}.
+      The exercises themselves stay in your library.</p>
+    <div class="actions">
+      <form class="inline" method="post">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit" class="button button-danger">Delete template</button>
+      </form>
+      <a href="{{ url_for('workout_templates.detail', template_id=template.id) }}">Cancel</a>
+    </div>
+  </div>
+{% endblock %}

@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block title %}My templates · LiftLog{% endblock %}
+
+{% block content %}
+  <div class="page-heading">
+    <h1>My workout templates</h1>
+    <a class="button" href="{{ url_for('workout_templates.create') }}">New template</a>
+  </div>
+
+  {% if templates %}
+    <ul class="exercise-list">
+      {% for template in templates %}
+        <li class="exercise-item">
+          <a href="{{ url_for('workout_templates.detail', template_id=template.id) }}">{{ template.name }}</a>
+          <span class="muted">
+            {{ template.difficulty }} ·
+            {{ template.items|length }} exercise{{ "" if template.items|length == 1 else "s" }}
+          </span>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <div class="card">
+      <p>You don't have any templates yet. A template is a workout plan you can reuse,
+        like "Push Day" or "Full Body A".</p>
+      <a class="button" href="{{ url_for('workout_templates.create') }}">Create your first template</a>
+    </div>
+  {% endif %}
+{% endblock %}
