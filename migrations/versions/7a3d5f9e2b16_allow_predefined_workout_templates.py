@@ -1,7 +1,7 @@
 """Allow predefined workout templates (empty user_id)
 
 Revision ID: 7a3d5f9e2b16
-Revises: c5a2e7f0d913
+Revises: e1b4c8a07f25
 Create Date: 2026-10-30 14:00:00.000000
 
 """
@@ -11,7 +11,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = '7a3d5f9e2b16'
-down_revision = 'c5a2e7f0d913'
+down_revision = 'e1b4c8a07f25'
 branch_labels = None
 depends_on = None
 
