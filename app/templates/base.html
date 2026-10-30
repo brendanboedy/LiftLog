@@ -20,7 +20,7 @@
         <a href="{{ url_for('workout_sessions.history') }}" {% if request.blueprint == 'workout_sessions' %}aria-current="page"{% endif %}>History</a>
         <a href="{{ url_for('workout_templates.list_templates') }}" {% if request.blueprint == 'workout_templates' %}aria-current="page"{% endif %}>Templates</a>
         <a href="{{ url_for('exercises.list_exercises') }}" {% if request.blueprint == 'exercises' %}aria-current="page"{% endif %}>Exercises</a>
-        <a href="{{ url_for('main.dashboard') }}">{{ current_user.username }}</a>
+        <a href="{{ url_for('profile.edit') }}" {% if request.blueprint == 'profile' %}aria-current="page"{% endif %}>{{ current_user.username }}</a>
         <!-- Log out is a small form (not a link) so it can carry a CSRF token -->
         <form class="inline" method="post" action="{{ url_for('auth.logout') }}">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">

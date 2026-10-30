@@ -29,11 +29,14 @@ class User(UserMixin, db.Model):
     password_hash = db.Column(db.String(128), nullable=False)
     created_at = db.Column(db.DateTime(timezone=True), nullable=False, default=utc_now)
 
-    # Profile fields from the ER model. Optional for now; the profile page
-    # (FR-4, Increment 2) will let users fill them in.
+    # Profile fields (FR-4). All optional; users fill them in on the profile page.
+    # age and gender are not in the ER model: they were added because the AI
+    # suggestions (FR-33) use them (open team decision on FR-4).
     goal_type = db.Column(db.String(50))
     experience_level = db.Column(db.String(50))
-    body_weight = db.Column(db.Float)
+    body_weight = db.Column(db.Float)  # lb, like set weights
+    age = db.Column(db.Integer)
+    gender = db.Column(db.String(30))
 
     def set_password(self, password):
         """Hash the password with bcrypt and store only the hash."""
@@ -66,6 +69,13 @@ EQUIPMENT_TYPES = [
 ]
 MOVEMENT_TYPES = ["Compound", "Isolation"]
 DIFFICULTIES = ["Beginner", "Intermediate", "Advanced"]
+
+# Choices for the profile page (FR-4).
+GOAL_TYPES = ["Build muscle", "Get stronger", "Lose fat", "Improve endurance", "General fitness"]
+EXPERIENCE_LEVELS = DIFFICULTIES
+GENDERS = ["Female", "Male", "Non-binary", "Prefer not to say"]
+MIN_AGE, MAX_AGE = 13, 100
+MAX_BODY_WEIGHT = 1000  # lb
 
 
 class Exercise(db.Model):
