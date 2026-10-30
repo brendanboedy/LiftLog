@@ -194,6 +194,33 @@ def remove_exercise(session_id, item_id):
     return back_to(workout)
 
 
+@bp.route("/<int:session_id>/exercises/<int:item_id>/move", methods=["POST"])
+@login_required
+def move_exercise(session_id, item_id):
+    """Move an exercise one place up or down in this workout only (FR-26).
+
+    Swaps it with its neighbour. Its sets stay with it, and the template the
+    workout was started from is not changed.
+    """
+    workout = in_progress_session_or_404(session_id)
+    item = session_item_or_404(workout, item_id)
+    items = sorted(workout.items, key=lambda row: row.order_index)
+    position = items.index(item)
+    direction = request.form.get("direction")
+    if direction == "up":
+        other = position - 1
+    elif direction == "down":
+        other = position + 1
+    else:
+        abort(400)
+    if 0 <= other < len(items):  # moving the first one up (or last one down) does nothing
+        items[position], items[other] = items[other], items[position]
+        for number, row in enumerate(items, start=1):
+            row.order_index = number
+        db.session.commit()
+    return back_to(workout)
+
+
 # ---------- sets (FR-24, FR-25) ----------
 
 @bp.route("/<int:session_id>/exercises/<int:item_id>/sets", methods=["POST"])

@@ -19,10 +19,23 @@
     <section class="card session-exercise">
       <div class="page-heading">
         <h2>{{ loop.index }}. {{ item.exercise.name }}</h2>
-        <form class="inline" method="post" action="{{ url_for('workout_sessions.remove_exercise', session_id=workout.id, item_id=item.id) }}">
-          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-          <button type="submit" class="small-button">Remove</button>
-        </form>
+        <div class="item-actions">
+          {# FR-26: reorder for today's workout only. Each button is a tiny POST form so it carries the CSRF token #}
+          <form class="inline" method="post" action="{{ url_for('workout_sessions.move_exercise', session_id=workout.id, item_id=item.id) }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="direction" value="up">
+            <button type="submit" class="small-button" {% if loop.first %}disabled{% endif %} aria-label="Move {{ item.exercise.name }} up">&uarr;</button>
+          </form>
+          <form class="inline" method="post" action="{{ url_for('workout_sessions.move_exercise', session_id=workout.id, item_id=item.id) }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="direction" value="down">
+            <button type="submit" class="small-button" {% if loop.last %}disabled{% endif %} aria-label="Move {{ item.exercise.name }} down">&darr;</button>
+          </form>
+          <form class="inline" method="post" action="{{ url_for('workout_sessions.remove_exercise', session_id=workout.id, item_id=item.id) }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="small-button">Remove</button>
+          </form>
+        </div>
       </div>
       {% if item.target %}<p class="muted">Target: {{ item.target }} reps</p>{% endif %}
 
