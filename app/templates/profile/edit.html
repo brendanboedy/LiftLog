@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% from "_form_field.html" import field %}
+
+{% block title %}My profile · LiftLog{% endblock %}
+
+{% block content %}
+  <h1>My profile</h1>
+  <p class="muted">Signed in as <strong>{{ current_user.username }}</strong>. Every field is optional.</p>
+
+  <form method="post" novalidate class="card">
+    {{ form.hidden_tag() }}
+    {{ field(form.goal_type) }}
+    {{ field(form.experience_level) }}
+    <div class="filter-row">
+      {{ field(form.body_weight, type="number", step="any", min="1", inputmode="decimal") }}
+      {{ field(form.age, type="number", min="13", inputmode="numeric") }}
+    </div>
+    {{ field(form.gender) }}
+    {{ form.submit(class="button") }}
+  </form>
+
+  <p><a href="{{ url_for('profile.change_password') }}">Change password</a></p>
+{% endblock %}
