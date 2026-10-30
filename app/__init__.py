@@ -59,4 +59,8 @@ def create_app(config_class=Config):
     from app.exercises.seed import seed_exercises_command
     app.cli.add_command(seed_exercises_command)
 
+    # Adds `flask --app run seed-templates` (loads predefined workout templates).
+    from app.workout_templates.seed import seed_templates_command
+    app.cli.add_command(seed_templates_command)
+
     return app
