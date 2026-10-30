@@ -45,6 +45,13 @@ LiftLog is a Python + Flask web app. These steps are for Windows (PowerShell, e.
    ```
    Success: it prints `Predefined exercises: N added, N updated.` Running it again is safe.
 
+   Then load the ready-made workout templates (and again whenever
+   `app/workout_templates/seed_data.py` changes):
+   ```
+   flask --app run seed-templates
+   ```
+   Success: it prints `Predefined templates: N added, N updated.`
+
    Open http://127.0.0.1:5000 . You should see "Welcome to LiftLog".
    http://127.0.0.1:5000/health should show `{"database": "ok", "status": "ok"}`. Press `Ctrl+C` to stop.
 7. **Run the tests:**

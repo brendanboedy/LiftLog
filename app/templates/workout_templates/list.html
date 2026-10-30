@@ -27,4 +27,20 @@
       <a class="button" href="{{ url_for('workout_templates.create') }}">Create your first template</a>
     </div>
   {% endif %}
+
+  {% if predefined %}
+    {# FR-19: ready-made templates anyone can view and start #}
+    <h2>Ready-made templates</h2>
+    <ul class="exercise-list">
+      {% for template in predefined %}
+        <li class="exercise-item">
+          <a href="{{ url_for('workout_templates.detail', template_id=template.id) }}">{{ template.name }}</a>
+          <span class="muted meta">
+            <span>{{ template.difficulty }}</span>
+            <span>{{ template.items|length }} exercise{{ "" if template.items|length == 1 else "s" }}</span>
+          </span>
+        </li>
+      {% endfor %}
+    </ul>
+  {% endif %}
 {% endblock %}

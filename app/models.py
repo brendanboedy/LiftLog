@@ -167,18 +167,19 @@ class WorkoutTemplate(db.Model):
     session will copy the template's exercises, so later edits to the template
     never change past sessions (FR-22, FR-26).
 
-    Not built yet: is_prebuilt / predefined templates (FR-19) - the ER model
-    says every template has an owner who must exist, which doesn't fit
-    templates that belong to no one, so the team needs to decide that first.
+    Predefined templates (FR-19) work like predefined exercises: they have no
+    owner (user_id is empty), every user can view them and start a session
+    from them, and nobody can change them on the website. The team loads them
+    with `flask --app run seed-templates`.
     """
 
     __tablename__ = "workout_templates"
 
     id = db.Column(db.Integer, primary_key=True)
+    # Empty (NULL) = predefined.
     user_id = db.Column(
         db.Integer,
         db.ForeignKey("users.id", ondelete="CASCADE", name="fk_workout_templates_user_id_users"),
-        nullable=False,
         index=True,
     )
     name = db.Column(db.String(100), nullable=False)
@@ -201,8 +202,16 @@ class WorkoutTemplate(db.Model):
         cascade="all, delete-orphan",
     )
 
+    @property
+    def is_predefined(self):
+        return self.user_id is None
+
     def is_owned_by(self, user):
-        return self.user_id == user.id
+        return self.user_id is not None and self.user_id == user.id
+
+    def is_visible_to(self, user):
+        """Everyone sees predefined templates; the user's own templates only they see."""
+        return self.is_predefined or self.is_owned_by(user)
 
     def renumber(self):
         """Number the exercises 1, 2, 3... with no gaps, in their current order."""

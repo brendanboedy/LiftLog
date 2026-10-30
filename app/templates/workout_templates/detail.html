@@ -4,16 +4,23 @@
 {% block title %}{{ template.name }} · LiftLog{% endblock %}
 
 {% block content %}
-  <p><a href="{{ url_for('workout_templates.list_templates') }}">&larr; My templates</a></p>
+  {# Predefined templates (FR-19) are view-only: no editing controls #}
+  {% set can_edit = template.is_owned_by(current_user) %}
+  <p><a href="{{ url_for('workout_templates.list_templates') }}">&larr; {{ "My templates" if can_edit else "Templates" }}</a></p>
 
   <div class="page-heading">
     <h1>{{ template.name }}</h1>
-    <div class="actions">
-      <a href="{{ url_for('workout_templates.edit', template_id=template.id) }}">Edit details</a>
-      <a href="{{ url_for('workout_templates.delete', template_id=template.id) }}">Delete</a>
-    </div>
+    {% if can_edit %}
+      <div class="actions">
+        <a href="{{ url_for('workout_templates.edit', template_id=template.id) }}">Edit details</a>
+        <a href="{{ url_for('workout_templates.delete', template_id=template.id) }}">Delete</a>
+      </div>
+    {% endif %}
   </div>
-  <p><span class="badge badge-muted">{{ template.difficulty }}</span></p>
+  <p>
+    <span class="badge badge-muted">{{ template.difficulty }}</span>
+    {% if template.is_predefined %}<span class="badge badge-muted">Ready-made</span>{% endif %}
+  </p>
   {% if template.description %}
     <p class="instructions">{{ template.description }}</p>
   {% endif %}
@@ -38,6 +45,7 @@
             {% if item.exercise.is_archived %}<span class="badge badge-muted">Archived</span>{% endif %}
             <div class="muted">{{ item.target_sets }} set{{ "" if item.target_sets == 1 else "s" }} × {{ item.rep_range }} reps</div>
           </div>
+          {% if can_edit %}
           <div class="item-actions">
             {# Each button is a tiny POST form so it carries the CSRF token #}
             <form class="inline" method="post" action="{{ url_for('workout_templates.move_exercise', template_id=template.id, item_id=item.id) }}">
@@ -56,6 +64,7 @@
               <button type="submit" class="small-button">Remove</button>
             </form>
           </div>
+          {% endif %}
         </li>
       {% endfor %}
     </ol>
@@ -63,6 +72,7 @@
     <p class="muted">No exercises yet. Add the first one below.</p>
   {% endif %}
 
+  {% if can_edit %}
   <h2>Add an exercise</h2>
   <form method="post" novalidate class="card" action="{{ url_for('workout_templates.add_exercise', template_id=template.id) }}">
     {{ add_form.hidden_tag() }}
@@ -75,4 +85,5 @@
     {{ add_form.submit(class="button") }}
     <p class="muted">Can't find it? <a href="{{ url_for('exercises.create') }}">Create a custom exercise</a>.</p>
   </form>
+  {% endif %}
 {% endblock %}

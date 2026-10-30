@@ -1,7 +1,9 @@
-"""Workout template pages (FR-14 to FR-18).
+"""Workout template pages (FR-14 to FR-19).
 
 Templates are private: every page needs a login (NFR-3), and someone else's
 template answers "404 Not Found" so its existence isn't revealed.
+Predefined templates (FR-19) can be viewed by everyone but changed by no one,
+so every page that changes a template uses own_template_or_404.
 Pages that change data only accept POST (a button with a CSRF token).
 """
 from flask import abort, flash, redirect, render_template, request, url_for
@@ -19,6 +21,14 @@ def own_template_or_404(template_id):
     """The template, if the logged-in user owns it."""
     template = db.session.get(WorkoutTemplate, template_id)
     if template is None or not template.is_owned_by(current_user):
+        abort(404)
+    return template
+
+
+def visible_template_or_404(template_id):
+    """The template, if the logged-in user owns it or it's predefined (view only)."""
+    template = db.session.get(WorkoutTemplate, template_id)
+    if template is None or not template.is_visible_to(current_user):
         abort(404)
     return template
 
@@ -71,13 +81,18 @@ def back_to(template):
 @bp.route("/")
 @login_required
 def list_templates():
-    """FR-16: the user's own templates."""
+    """FR-16: the user's own templates. FR-19: the predefined ones, listed separately."""
     templates = db.session.execute(
         db.select(WorkoutTemplate)
         .where(WorkoutTemplate.user_id == current_user.id)
         .order_by(db.func.lower(WorkoutTemplate.name))
     ).scalars().all()
-    return render_template("workout_templates/list.html", templates=templates)
+    predefined = db.session.execute(
+        db.select(WorkoutTemplate)
+        .where(WorkoutTemplate.user_id.is_(None))
+        .order_by(db.func.lower(WorkoutTemplate.name))
+    ).scalars().all()
+    return render_template("workout_templates/list.html", templates=templates, predefined=predefined)
 
 
 @bp.route("/new", methods=["GET", "POST"])
@@ -98,9 +113,11 @@ def create():
 @bp.route("/<int:template_id>")
 @login_required
 def detail(template_id):
-    """FR-16: the template's exercises in order, with sets and rep ranges."""
-    template = own_template_or_404(template_id)
-    return render_template("workout_templates/detail.html", template=template, add_form=make_add_form())
+    """FR-16: the template's exercises in order, with sets and rep ranges.
+    FR-19: predefined templates use this page too, without the editing controls."""
+    template = visible_template_or_404(template_id)
+    add_form = make_add_form() if template.is_owned_by(current_user) else None
+    return render_template("workout_templates/detail.html", template=template, add_form=add_form)
 
 
 @bp.route("/<int:template_id>/edit", methods=["GET", "POST"])

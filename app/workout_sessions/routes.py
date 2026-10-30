@@ -130,8 +130,8 @@ def history():
 @bp.route("/start", methods=["POST"])
 @login_required
 def start():
-    """FR-22: start from one of the user's templates (copying its exercises), or
-    FR-23: start an empty workout when no template is chosen."""
+    """FR-22: start from one of the user's templates or a predefined one (copying
+    its exercises), or FR-23: start an empty workout when no template is chosen."""
     active = WorkoutSession.active_for(current_user)
     if active is not None:
         flash("Finish or cancel this workout before starting another one.", "info")
@@ -140,7 +140,7 @@ def start():
     template_id = request.form.get("template_id", "")
     if template_id:
         template = db.session.get(WorkoutTemplate, int(template_id)) if template_id.isdigit() else None
-        if template is None or not template.is_owned_by(current_user):
+        if template is None or not template.is_visible_to(current_user):
             abort(404)
         workout = WorkoutSession(user_id=current_user.id, template_id=template.id, name=template.name)
         for template_item in template.items:
