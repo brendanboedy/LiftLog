@@ -1,9 +1,10 @@
-"""Workout template pages (FR-14 to FR-19).
+"""Workout template pages (FR-14 to FR-21).
 
 Templates are private: every page needs a login (NFR-3), and someone else's
-template answers "404 Not Found" so its existence isn't revealed.
-Predefined templates (FR-19) can be viewed by everyone but changed by no one,
-so every page that changes a template uses own_template_or_404.
+private template answers "404 Not Found" so its existence isn't revealed.
+Predefined templates (FR-19) and other people's public templates (FR-21) can
+be viewed by everyone but changed by no one, so every page that changes a
+template uses own_template_or_404.
 Pages that change data only accept POST (a button with a CSRF token).
 """
 from flask import abort, flash, redirect, render_template, request, url_for
@@ -26,7 +27,7 @@ def own_template_or_404(template_id):
 
 
 def visible_template_or_404(template_id):
-    """The template, if the logged-in user owns it or it's predefined (view only)."""
+    """The template, if the logged-in user owns it or it's predefined or public (view only)."""
     template = db.session.get(WorkoutTemplate, template_id)
     if template is None or not template.is_visible_to(current_user):
         abort(404)
@@ -114,7 +115,7 @@ def create():
 @login_required
 def detail(template_id):
     """FR-16: the template's exercises in order, with sets and rep ranges.
-    FR-19: predefined templates use this page too, without the editing controls."""
+    FR-19 / FR-21: predefined and public templates use this page too, without the editing controls."""
     template = visible_template_or_404(template_id)
     add_form = make_add_form() if template.is_owned_by(current_user) else None
     return render_template("workout_templates/detail.html", template=template, add_form=add_form)
@@ -151,6 +152,86 @@ def delete(template_id):
         flash(f"Deleted {name}.", "info")
         return redirect(url_for("workout_templates.list_templates"))
     return render_template("workout_templates/confirm_delete.html", template=template)
+
+
+# ---------- sharing (FR-20, FR-21) ----------
+
+@bp.route("/public")
+@login_required
+def browse_public():
+    """FR-21: other users' public templates, with their creator's username (open team decision).
+
+    Predefined templates have no owner and the user's own public ones are already in
+    their own list, so neither appears here.
+    """
+    templates = db.session.execute(
+        db.select(WorkoutTemplate)
+        .where(
+            WorkoutTemplate.is_public.is_(True),
+            WorkoutTemplate.user_id.is_not(None),
+            WorkoutTemplate.user_id != current_user.id,
+        )
+        .order_by(db.func.lower(WorkoutTemplate.name), WorkoutTemplate.id)
+    ).scalars().all()
+    return render_template("workout_templates/public.html", templates=templates)
+
+
+@bp.route("/<int:template_id>/visibility", methods=["POST"])
+@login_required
+def set_visibility(template_id):
+    """FR-20: make one of your templates public or private again.
+
+    Anyone who already copied it keeps their copy: a copy is a separate template.
+    """
+    template = own_template_or_404(template_id)
+    if request.form.get("visibility") not in ("public", "private"):
+        abort(400)
+    template.is_public = request.form["visibility"] == "public"
+    db.session.commit()
+    if template.is_public:
+        flash(f"{template.name} is now public. Other users can see and copy it.", "success")
+    else:
+        flash(f"{template.name} is now private.", "info")
+    return back_to(template)
+
+
+@bp.route("/<int:template_id>/copy", methods=["POST"])
+@login_required
+def copy(template_id):
+    """FR-21: copy someone else's public template into your own templates.
+
+    The copy is private (FR-20) and belongs to you, so you can edit it like any
+    other template. Exercises you aren't allowed to see (the other person's
+    private custom exercises) are left out of the copy.
+    """
+    original = db.session.get(WorkoutTemplate, template_id)
+    if (original is None or original.is_predefined or original.is_owned_by(current_user)
+            or not original.is_public):
+        abort(404)
+
+    new = WorkoutTemplate(
+        user_id=current_user.id, name=original.name, description=original.description,
+        difficulty=original.difficulty,
+    )
+    skipped = 0
+    for item in original.items:
+        if not item.exercise.is_visible_to(current_user):
+            skipped += 1
+            continue
+        new.items.append(WorkoutTemplateExercise(
+            exercise_id=item.exercise_id, order_index=len(new.items) + 1,
+            target_sets=item.target_sets, rep_range_min=item.rep_range_min,
+            rep_range_max=item.rep_range_max,
+        ))
+    db.session.add(new)
+    db.session.commit()
+
+    message = f"Copied {new.name} to your templates."
+    if skipped:
+        message += (f" {skipped} exercise{'' if skipped == 1 else 's'} left out because "
+                    f"{'it is' if skipped == 1 else 'they are'} private to {original.owner.username}.")
+    flash(message, "success")
+    return back_to(new)
 
 
 # ---------- exercises inside a template ----------

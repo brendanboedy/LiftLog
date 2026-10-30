@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block title %}Public templates · LiftLog{% endblock %}
+
+{% block content %}
+  <p><a href="{{ url_for('workout_templates.list_templates') }}">&larr; My templates</a></p>
+  <h1>Public templates</h1>
+  <p class="muted">Workout plans other LiftLog users chose to share. Open one to see its exercises and copy it to your own templates.</p>
+
+  {% if templates %}
+    <ul class="exercise-list">
+      {% for template in templates %}
+        <li class="exercise-item">
+          <a href="{{ url_for('workout_templates.detail', template_id=template.id) }}">{{ template.name }}</a>
+          <span class="muted meta">
+            <span>by {{ template.owner.username }}</span>
+            <span>{{ template.difficulty }}</span>
+            <span>{{ template.items|length }} exercise{{ "" if template.items|length == 1 else "s" }}</span>
+          </span>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <div class="card">
+      <p>Nobody has shared a template yet. Open one of yours and choose "Make public" to be the first.</p>
+      <a class="button" href="{{ url_for('workout_templates.list_templates') }}">My templates</a>
+    </div>
+  {% endif %}
+{% endblock %}

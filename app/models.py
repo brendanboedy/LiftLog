@@ -185,7 +185,8 @@ class WorkoutTemplate(db.Model):
     name = db.Column(db.String(100), nullable=False)
     description = db.Column(db.Text)
     difficulty = db.Column(db.String(20), nullable=False)
-    # In the ER model. New templates are private (FR-20); sharing comes later (FR-21).
+    # In the ER model. New templates are private (FR-20). A public one can be viewed
+    # and copied by other users (FR-21), never changed by them.
     is_public = db.Column(db.Boolean, nullable=False, default=False, server_default=db.false())
     created_at = db.Column(db.DateTime(timezone=True), nullable=False, default=utc_now)
 
@@ -210,7 +211,15 @@ class WorkoutTemplate(db.Model):
         return self.user_id is not None and self.user_id == user.id
 
     def is_visible_to(self, user):
-        """Everyone sees predefined templates; the user's own templates only they see."""
+        """Everyone sees predefined and public templates; a private one only its owner (NFR-2)."""
+        return self.is_predefined or self.is_public or self.is_owned_by(user)
+
+    def is_startable_by(self, user):
+        """A workout can be started from the user's own templates and the predefined ones.
+
+        Public templates made by other people can only be copied (FR-21): they may use
+        that person's private custom exercises, which this user is not allowed to see.
+        """
         return self.is_predefined or self.is_owned_by(user)
 
     def renumber(self):

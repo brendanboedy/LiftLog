@@ -4,9 +4,16 @@
 {% block title %}{{ template.name }} · LiftLog{% endblock %}
 
 {% block content %}
-  {# Predefined templates (FR-19) are view-only: no editing controls #}
+  {# Predefined (FR-19) and other people's public (FR-21) templates are view-only: no editing controls #}
   {% set can_edit = template.is_owned_by(current_user) %}
-  <p><a href="{{ url_for('workout_templates.list_templates') }}">&larr; {{ "My templates" if can_edit else "Templates" }}</a></p>
+  {% set shared_by_someone_else = not can_edit and not template.is_predefined %}
+  <p>
+    {% if shared_by_someone_else %}
+      <a href="{{ url_for('workout_templates.browse_public') }}">&larr; Public templates</a>
+    {% else %}
+      <a href="{{ url_for('workout_templates.list_templates') }}">&larr; {{ "My templates" if can_edit else "Templates" }}</a>
+    {% endif %}
+  </p>
 
   <div class="page-heading">
     <h1>{{ template.name }}</h1>
@@ -20,12 +27,40 @@
   <p>
     <span class="badge badge-muted">{{ template.difficulty }}</span>
     {% if template.is_predefined %}<span class="badge badge-muted">Ready-made</span>{% endif %}
+    {% if can_edit %}
+      <span class="badge badge-muted">{{ "Public" if template.is_public else "Private" }}</span>
+    {% endif %}
+    {% if shared_by_someone_else %}<span class="muted">by {{ template.owner.username }}</span>{% endif %}
   </p>
   {% if template.description %}
     <p class="instructions">{{ template.description }}</p>
   {% endif %}
 
-  {% if template.items %}
+  {% if can_edit %}
+    {# FR-20: public templates can be seen and copied by other users #}
+    <form class="inline" method="post" action="{{ url_for('workout_templates.set_visibility', template_id=template.id) }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <input type="hidden" name="visibility" value="{{ 'private' if template.is_public else 'public' }}">
+      <button type="submit" class="button button-secondary">{{ "Make private" if template.is_public else "Make public" }}</button>
+    </form>
+    <p class="muted">
+      {% if template.is_public %}
+        Other users can see this template and copy it. Your private custom exercises are left out of their copy.
+      {% else %}
+        Only you can see this template.
+      {% endif %}
+    </p>
+  {% endif %}
+
+  {% if shared_by_someone_else %}
+    {# FR-21: a copy is your own template, so you can edit it #}
+    <form method="post" action="{{ url_for('workout_templates.copy', template_id=template.id) }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button type="submit" class="button">Copy to my templates</button>
+    </form>
+  {% endif %}
+
+  {% if template.items and not shared_by_someone_else %}
     {# FR-22: start a workout session that copies this template's exercises #}
     <form method="post" action="{{ url_for('workout_sessions.start') }}">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
@@ -41,7 +76,12 @@
         <li class="exercise-item">
           <div class="item-main">
             <span class="muted">{{ loop.index }}.</span>
-            <a href="{{ url_for('exercises.detail', exercise_id=item.exercise.id) }}">{{ item.exercise.name }}</a>
+            {% if item.exercise.is_visible_to(current_user) %}
+              <a href="{{ url_for('exercises.detail', exercise_id=item.exercise.id) }}">{{ item.exercise.name }}</a>
+            {% else %}
+              {# someone else's private custom exercise: show its name, but its page is not open to you #}
+              {{ item.exercise.name }} <span class="badge badge-muted">Custom</span>
+            {% endif %}
             {% if item.exercise.is_archived %}<span class="badge badge-muted">Archived</span>{% endif %}
             <div class="muted">{{ item.target_sets }} set{{ "" if item.target_sets == 1 else "s" }} × {{ item.rep_range }} reps</div>
           </div>
