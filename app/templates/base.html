@@ -18,6 +18,7 @@
       {% if current_user.is_authenticated %}
         <a href="{{ url_for('main.dashboard') }}" {% if request.endpoint == 'main.dashboard' %}aria-current="page"{% endif %}>Overview</a>
         <a href="{{ url_for('workout_sessions.history') }}" {% if request.blueprint == 'workout_sessions' %}aria-current="page"{% endif %}>History</a>
+        <a href="{{ url_for('progress.chart') }}" {% if request.blueprint == 'progress' %}aria-current="page"{% endif %}>Progress</a>
         <a href="{{ url_for('workout_templates.list_templates') }}" {% if request.blueprint == 'workout_templates' %}aria-current="page"{% endif %}>Templates</a>
         <a href="{{ url_for('exercises.list_exercises') }}" {% if request.blueprint == 'exercises' %}aria-current="page"{% endif %}>Exercises</a>
         <a href="{{ url_for('profile.edit') }}" {% if request.blueprint == 'profile' %}aria-current="page"{% endif %}>{{ current_user.username }}</a>

@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% from "_form_field.html" import field %}
+
+{% block title %}Progress · LiftLog{% endblock %}
+
+{% block content %}
+  <h1>Progress</h1>
+
+  {% if not exercises %}
+    <div class="card">
+      <p>Nothing to chart yet. Finish a workout with at least one logged set and your progress shows up here.</p>
+      <a class="button" href="{{ url_for('workout_templates.list_templates') }}">Start a workout</a>
+    </div>
+  {% else %}
+    {# A plain GET form: the choice ends up in the address (?exercise_id=3) so the chart can be bookmarked #}
+    <form method="get" class="card filters">
+      <div class="form-field">
+        <label for="exercise_id">Exercise</label>
+        <select id="exercise_id" name="exercise_id" class="input">
+          <option value="">Choose an exercise...</option>
+          {% for exercise in exercises %}
+            <option value="{{ exercise.id }}" {% if chosen and chosen.id == exercise.id %}selected{% endif %}>{{ exercise.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <button type="submit" class="button">Show progress</button>
+    </form>
+
+    {% if chosen %}
+      <h2>{{ chosen.name }}</h2>
+      <p class="muted">
+        {{ points|length }} workout{{ "" if points|length == 1 else "s" }}.
+        Weights are in lb. Volume is weight &times; reps, added up for the day.
+      </p>
+
+      <div class="card">
+        <h3>Heaviest weight</h3>
+        <div class="chart-box"><canvas id="weight-chart" role="img" aria-label="Heaviest weight lifted in {{ chosen.name }} for each workout"></canvas></div>
+      </div>
+      <div class="card">
+        <h3>Total volume</h3>
+        <div class="chart-box"><canvas id="volume-chart" role="img" aria-label="Total volume of {{ chosen.name }} for each workout"></canvas></div>
+      </div>
+
+      {# The same numbers as a table: readable by screen readers and still there if the chart can't load #}
+      <table class="progress-table">
+        <thead>
+          <tr><th>Date</th><th>Workout</th><th>Heaviest (lb)</th><th>Volume</th></tr>
+        </thead>
+        <tbody>
+          {% for point in points|reverse %}
+            <tr>
+              <td>{{ point.date }}</td>
+              <td>{{ point.workout }}</td>
+              <td>{{ "%g"|format(point.max_weight) }}</td>
+              <td>{{ "%g"|format(point.volume) }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+      <script id="progress-data" type="application/json">{{ points|tojson }}</script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"
+              integrity="sha384-bs/nf9FbdNouRbMiFcrcZfLXYPKiPaGVGplVbv7dLGECccEXDW+S3zjqSKR5ZEaD"
+              crossorigin="anonymous"></script>
+      <script src="{{ url_for('static', filename='js/progress.js') }}"></script>
+    {% elif request.args.get("exercise_id") %}
+      <p class="muted">You haven't logged that exercise in a finished workout, so there's nothing to chart.</p>
+    {% endif %}
+  {% endif %}
+{% endblock %}
