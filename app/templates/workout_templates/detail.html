@@ -6,12 +6,13 @@
 {% block content %}
   {# Predefined (FR-19) and other people's public (FR-21) templates are view-only: no editing controls #}
   {% set can_edit = template.is_owned_by(current_user) %}
+  {% set managing = can_edit and (request.args.get("manage") == "1" or not template.items or (add_form and add_form.errors)) %}
   {% set shared_by_someone_else = not can_edit and not template.is_predefined %}
   <p>
     {% if shared_by_someone_else %}
-      <a href="{{ url_for('workout_templates.browse_public') }}">&larr; Public templates</a>
+      <a href="{{ url_for('workout_templates.browse_public') }}">&larr; Public routines</a>
     {% else %}
-      <a href="{{ url_for('workout_templates.list_templates') }}">&larr; {{ "My templates" if can_edit else "Templates" }}</a>
+      <a href="{{ url_for('workout_templates.list_templates') }}">&larr; {{ "My routines" if can_edit else "Routines" }}</a>
     {% endif %}
   </p>
 
@@ -19,8 +20,13 @@
     <h1>{{ template.name }}</h1>
     {% if can_edit %}
       <div class="actions">
+        {% if managing %}
+        <a href="{{ url_for('workout_templates.detail', template_id=template.id) }}">Done editing</a>
         <a href="{{ url_for('workout_templates.edit', template_id=template.id) }}">Edit details</a>
         <a href="{{ url_for('workout_templates.delete', template_id=template.id) }}">Delete</a>
+        {% else %}
+        <a href="{{ url_for('workout_templates.detail', template_id=template.id, manage=1) }}">Edit routine</a>
+        {% endif %}
       </div>
     {% endif %}
   </div>
@@ -36,7 +42,16 @@
     <p class="instructions">{{ template.description }}</p>
   {% endif %}
 
-  {% if can_edit %}
+  {% if template.items and not shared_by_someone_else %}
+    {# FR-22: start a workout session that copies this routine's exercises #}
+    <form method="post" action="{{ url_for('workout_sessions.start') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <input type="hidden" name="template_id" value="{{ template.id }}">
+      <button type="submit" class="button">Start this workout</button>
+    </form>
+  {% endif %}
+
+  {% if managing %}
     {# FR-20: public templates can be seen and copied by other users #}
     <form class="inline" method="post" action="{{ url_for('workout_templates.set_visibility', template_id=template.id) }}">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
@@ -45,9 +60,9 @@
     </form>
     <p class="muted">
       {% if template.is_public %}
-        Other users can see this template and copy it. Your private custom exercises are left out of their copy.
+        Other users can see this routine and copy it. Your private custom exercises are left out of their copy.
       {% else %}
-        Only you can see this template.
+        Only you can see this routine.
       {% endif %}
     </p>
   {% endif %}
@@ -56,16 +71,7 @@
     {# FR-21: a copy is your own template, so you can edit it #}
     <form method="post" action="{{ url_for('workout_templates.copy', template_id=template.id) }}">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-      <button type="submit" class="button">Copy to my templates</button>
-    </form>
-  {% endif %}
-
-  {% if template.items and not shared_by_someone_else %}
-    {# FR-22: start a workout session that copies this template's exercises #}
-    <form method="post" action="{{ url_for('workout_sessions.start') }}">
-      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-      <input type="hidden" name="template_id" value="{{ template.id }}">
-      <button type="submit" class="button">Start this workout</button>
+      <button type="submit" class="button">Copy to my routines</button>
     </form>
   {% endif %}
 
@@ -85,7 +91,7 @@
             {% if item.exercise.is_archived %}<span class="badge badge-muted">Archived</span>{% endif %}
             <div class="muted">{{ item.target_sets }} set{{ "" if item.target_sets == 1 else "s" }} × {{ item.rep_range }} reps</div>
           </div>
-          {% if can_edit %}
+          {% if managing %}
           <div class="item-actions">
             {# Each button is a tiny POST form so it carries the CSRF token #}
             <form class="inline" method="post" action="{{ url_for('workout_templates.move_exercise', template_id=template.id, item_id=item.id) }}">
@@ -112,7 +118,8 @@
     <p class="muted">No exercises yet. Add the first one below.</p>
   {% endif %}
 
-  {% if can_edit %}
+  {% if managing %}
+  <p><a href="{{ url_for('exercises.list_exercises') }}">Browse the exercise library</a></p>
   <h2>Add an exercise</h2>
   <form method="post" novalidate class="card" action="{{ url_for('workout_templates.add_exercise', template_id=template.id) }}">
     {{ add_form.hidden_tag() }}

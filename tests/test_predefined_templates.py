@@ -95,9 +95,9 @@ def test_seed_command_runs(app):
 def test_template_list_shows_predefined_templates(client, seeded):
     sign_up(client)
     response = client.get("/templates/")
-    assert b"Ready-made templates" in response.data
+    assert b"Ready-made routines" in response.data
     assert b"Full Body Beginner" in response.data
-    assert b"You don't have any templates yet." in response.data  # own list is still empty
+    assert b"You don't have any routines yet." in response.data  # own list is still empty
 
 
 def test_predefined_template_page_is_view_only(client, seeded):

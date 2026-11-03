@@ -415,3 +415,28 @@ textarea.input { min-height: 110px; resize: vertical; }
   .details { grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr); gap: 8px 12px; }
   .details dd { overflow-wrap: anywhere; }
 }
+
+/* Simple, keyboard-accessible disclosure controls. */
+summary { cursor: pointer; min-height: 44px; padding: 10px 0; color: var(--text-muted); }
+summary:hover { color: var(--text); }
+.profile-menu { position: relative; }
+.profile-menu-content { position: absolute; z-index: 5; right: 0; min-width: 170px; padding: 16px; background: var(--surface); border: 1px solid var(--line-strong); border-radius: var(--radius-control); box-shadow: 0 8px 28px #0006; }
+.profile-menu-content a { display: block; }
+.routine-row { justify-content: space-between; align-items: center; }
+.routine-row form { margin: 0; }
+.set-inputs { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.optional-notes { margin-bottom: 12px; }
+.exercise-options { flex: 0 0 auto; }
+.exercise-options .item-actions { justify-content: flex-end; max-width: 190px; }
+.small-button { min-height: 44px; padding: 10px; }
+.set-options { white-space: normal; }
+.set-options summary { text-align: right; }
+.set-options .small-button { margin-bottom: 4px; }
+@media (max-width: 600px) {
+  .nav { gap: 6px 14px; }
+  .session-exercise .page-heading { flex-wrap: wrap; }
+  .session-exercise .page-heading h2 { flex: 1 1 180px; }
+  .set-inputs .input { font-size: 1.2rem; }
+  .routine-row .button { width: 100%; }
+  .routine-row form { flex: 1 1 100%; }
+}

@@ -98,7 +98,7 @@ def test_list_shows_only_my_templates(client):
 
 def test_empty_list_explains_templates(client):
     sign_up(client)
-    assert b"Create your first template" in client.get("/templates/").data
+    assert b"Create your first routine" in client.get("/templates/").data
 
 
 # ---------- adding exercises (FR-15) ----------
@@ -208,7 +208,7 @@ def test_edit_template_details(client):
     response = client.post(f"/templates/{template.id}/edit",
                            data={"name": "Push Day A", "difficulty": "Advanced", "description": ""},
                            follow_redirects=True)
-    assert b"Template updated." in response.data
+    assert b"Routine updated." in response.data
     edited = get_template("Push Day A")
     assert edited.difficulty == "Advanced"
     assert edited.description is None

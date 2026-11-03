@@ -76,7 +76,7 @@ def test_new_templates_are_private(client):
     sign_up(client)
     template = make_template(client)
     assert template.is_public is False
-    assert b"Make public" in client.get(f"/templates/{template.id}").data
+    assert b"Make public" in client.get(f"/templates/{template.id}?manage=1").data
 
 
 def test_owner_can_make_template_public_and_private_again(client):
@@ -152,7 +152,7 @@ def test_own_and_ready_made_templates_are_not_in_the_public_list(client):
     response = client.get("/templates/public")
     assert b"My Public One" not in response.data   # already in my own list
     assert b"Full Body Beginner" not in response.data  # ready-made, has no owner
-    assert b"Nobody has shared a template yet" in response.data
+    assert b"Nobody has shared a routine yet" in response.data
 
 
 def test_public_template_page_is_view_only_for_others(client):
@@ -166,7 +166,7 @@ def test_public_template_page_is_view_only_for_others(client):
     assert response.status_code == 200
     assert b"Barbell Bench Press" in response.data
     assert b"by olivia" in response.data
-    assert b"Copy to my templates" in response.data
+    assert b"Copy to my routines" in response.data
     assert b"Edit details" not in response.data
     assert b"Add an exercise" not in response.data
     assert b"Make private" not in response.data
@@ -231,7 +231,7 @@ def test_copy_makes_a_private_template_of_my_own(client):
 
     sign_up(client, "brendan")
     response = client.post(f"/templates/{original.id}/copy", follow_redirects=True)
-    assert b"Copied Push Day to your templates." in response.data
+    assert b"Copied Push Day to your routines." in response.data
     assert b"Edit details" in response.data  # the copy is mine, so it can be edited
 
     copies = [t for t in templates_named("Push Day") if t.id != original.id]

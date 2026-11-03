@@ -34,7 +34,7 @@ class TemplateForm(FlaskForm):
         choices=[("", "Choose...")] + [(d, d) for d in DIFFICULTIES],
         validators=[DataRequired(message="Choose a difficulty.")],
     )
-    submit = SubmitField("Save template")
+    submit = SubmitField("Save routine")
 
 
 class TargetsForm(FlaskForm):
@@ -81,4 +81,4 @@ class AddExerciseForm(TargetsForm):
         coerce=int_or_none,
         validators=[DataRequired(message="Choose an exercise.")],
     )
-    submit = SubmitField("Add to template")
+    submit = SubmitField("Add to routine")

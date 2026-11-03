@@ -5,7 +5,7 @@ from sqlalchemy import text
 
 from app.extensions import db
 from app.main import bp
-from app.models import WorkoutSession
+from app.models import WorkoutSession, WorkoutTemplate
 
 
 @bp.route("/")
@@ -22,7 +22,17 @@ def dashboard():
     Links to the user's templates, exercises and history, and to their
     in-progress workout if they have one.
     """
-    return render_template("main/dashboard.html", active=WorkoutSession.active_for(current_user))
+    routines = db.session.execute(
+        db.select(WorkoutTemplate)
+        .where(WorkoutTemplate.user_id == current_user.id)
+        .order_by(db.func.lower(WorkoutTemplate.name))
+    ).scalars().all()
+    ready_made = db.session.execute(
+        db.select(WorkoutTemplate).where(WorkoutTemplate.user_id.is_(None))
+        .order_by(db.func.lower(WorkoutTemplate.name))
+    ).scalars().all() if not routines else []
+    return render_template("main/dashboard.html", active=WorkoutSession.active_for(current_user),
+                           routines=routines, ready_made=ready_made)
 
 
 @bp.route("/health")

@@ -74,24 +74,43 @@ def set_prefix(item):
     return f"set{item.id}"
 
 
-def blank_set_form(item):
+def blank_set_form(item, previous=None):
     """An "add a set" form, filled in with the last set's numbers to save typing."""
     # formdata=None: start empty instead of reading what was just submitted
     form = SetForm(formdata=None, prefix=set_prefix(item))
     if item.sets:
         form.weight.data = item.sets[-1].weight
         form.reps.data = item.sets[-1].reps
+    elif previous is not None:
+        form.weight.data = previous.weight
+        form.reps.data = previous.reps
     return form
 
 
 def render_workout(workout, set_forms=None, exercise_form=None, status=200):
     """The in-progress workout page. set_forms can replace one exercise's form to show its errors."""
-    forms = {item.id: blank_set_form(item) for item in workout.items}
+    # Only the signed-in user's completed workouts can supply previous values.
+    exercise_ids = {item.exercise_id for item in workout.items}
+    previous_sets = {}
+    if exercise_ids:
+        entries = db.session.execute(
+            db.select(SetEntry)
+            .join(WorkoutSessionExercise).join(WorkoutSession)
+            .where(WorkoutSession.user_id == current_user.id,
+                   WorkoutSession.completed.is_(True),
+                   WorkoutSessionExercise.exercise_id.in_(exercise_ids))
+            .order_by(WorkoutSession.date_performed.desc(), WorkoutSession.id.desc(),
+                      WorkoutSessionExercise.order_index.desc(), SetEntry.set_number.desc())
+        ).scalars()
+        for entry in entries:
+            previous_sets.setdefault(entry.session_exercise.exercise_id, entry)
+    forms = {item.id: blank_set_form(item, previous_sets.get(item.exercise_id)) for item in workout.items}
     forms.update(set_forms or {})
     return render_template(
         "workout_sessions/active.html",
         workout=workout,
         set_forms=forms,
+        previous_sets=previous_sets,
         exercise_form=exercise_form or make_exercise_form(),
     ), status
 

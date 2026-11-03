@@ -19,7 +19,7 @@
     <section class="card session-exercise">
       <div class="page-heading">
         <h2>{{ loop.index }}. {{ item.exercise.name }}</h2>
-        <div class="item-actions">
+        <details class="exercise-options"><summary>Options</summary><div class="item-actions">
           {# FR-26: reorder for today's workout only. Each button is a tiny POST form so it carries the CSRF token #}
           <form class="inline" method="post" action="{{ url_for('workout_sessions.move_exercise', session_id=workout.id, item_id=item.id) }}">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
@@ -35,10 +35,14 @@
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <button type="submit" class="small-button">Remove</button>
           </form>
-        </div>
+        </div></details>
       </div>
       {% if item.target %}<p class="muted">Target: {{ item.target }} reps</p>{% endif %}
 
+      {% if previous_sets.get(item.exercise_id) %}
+        {% set previous = previous_sets[item.exercise_id] %}
+        <p class="muted">Last time: {{ previous.weight_text }} lb × {{ previous.reps }} reps</p>
+      {% endif %}
       {% if item.sets %}
         <table class="sets">
           <thead><tr><th>Set</th><th>Weight (lb)</th><th>Reps</th><th></th></tr></thead>
@@ -49,11 +53,13 @@
                 <td class="num">{{ entry.weight_text }}</td>
                 <td class="num">{{ entry.reps }}</td>
                 <td class="set-actions">
+                  <details class="set-options"><summary aria-label="Edit or delete set {{ entry.set_number }}">Options</summary>
                   <a class="small-button" href="{{ url_for('workout_sessions.edit_set', session_id=workout.id, set_id=entry.id) }}">Edit</a>
                   <form class="inline" method="post" action="{{ url_for('workout_sessions.delete_set', session_id=workout.id, set_id=entry.id) }}">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <button type="submit" class="small-button" aria-label="Delete set {{ entry.set_number }}">Delete</button>
                   </form>
+                  </details>
                 </td>
               </tr>
               {% if entry.notes %}<tr class="set-notes"><td></td><td colspan="3" class="muted">{{ entry.notes }}</td></tr>{% endif %}
@@ -64,24 +70,29 @@
 
       <form method="post" novalidate action="{{ url_for('workout_sessions.add_set', session_id=workout.id, item_id=item.id) }}">
         {{ form.hidden_tag() }}
-        <div class="number-row">
+        <div class="number-row set-inputs">
           {{ field(form.weight, type="number", step="any", min="0", inputmode="decimal") }}
           {{ field(form.reps, min="1", inputmode="numeric") }}
-          {{ field(form.notes, autocomplete="off") }}
         </div>
+        <details class="optional-notes" {% if form.notes.errors or form.notes.data %}open{% endif %}>
+          <summary>Add a note</summary>
+          {{ field(form.notes, autocomplete="off") }}
+        </details>
         {{ form.submit(class="button") }}
       </form>
     </section>
   {% endfor %}
 
-  <h2>Add an exercise</h2>
-  <form method="post" novalidate class="card" action="{{ url_for('workout_sessions.add_exercise', session_id=workout.id) }}">
+  <details class="card" {% if not workout.items or exercise_form.errors %}open{% endif %}>
+  <summary>Add an exercise</summary>
+  <form method="post" novalidate action="{{ url_for('workout_sessions.add_exercise', session_id=workout.id) }}">
     {{ exercise_form.hidden_tag() }}
     {{ field(exercise_form.exercise_id) }}
     {{ exercise_form.submit(class="button button-secondary") }}
-    <p class="muted">This only changes today's workout, not the template.</p>
+    <p class="muted">This only changes today's workout, not the routine.</p>
   </form>
 
+  </details>
   <div class="actions finish-bar">
     <a class="button" href="{{ url_for('workout_sessions.finish', session_id=workout.id) }}">Finish workout</a>
     <a href="{{ url_for('workout_sessions.delete', session_id=workout.id) }}">Cancel workout</a>

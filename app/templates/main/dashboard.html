@@ -1,35 +1,52 @@
 {% extends "base.html" %}
-
-{% block title %}My LiftLog{% endblock %}
-
+{% block title %}Home · LiftLog{% endblock %}
 {% block content %}
   <div class="dashboard-intro">
-    <p class="eyebrow">Your training, dialed in</p>
+    <p class="eyebrow">One set stronger</p>
     <h1>Hi, {{ current_user.username }}!</h1>
-    <p class="muted">Make your next set count.</p>
+    <p class="muted">{{ "Pick up where you left off." if active else "Ready for your next workout?" }}</p>
   </div>
   {% if active %}
-    <div class="card card-highlight">
-      <p><strong>{{ active.name }}</strong> is in progress.</p>
+    <section class="card card-highlight">
+      <span class="badge badge-live">In progress</span>
+      <h2>{{ active.name }}</h2>
+      <p class="muted">{{ active.set_count }} sets logged · Started {{ active.minutes_so_far() }} min ago</p>
       <a class="button" href="{{ url_for('workout_sessions.detail', session_id=active.id) }}">Continue workout</a>
-    </div>
+    </section>
   {% endif %}
-  <div class="dashboard-grid">
-    <section class="card">
-      <p class="eyebrow">Ready when you are</p>
-      <h2>Your next workout starts here.</h2>
-      <p class="muted">Build a routine or jump into one of your saved templates.</p>
-      <a class="button" href="{{ url_for('workout_templates.list_templates') }}">My workout templates &rarr;</a>
-    </section>
-    <section class="card">
-      <p class="eyebrow">Every session counts</p>
-      <h2>Your training journal.</h2>
-      <p class="muted">Revisit your workouts, sets, and the work you've put in.</p>
-      <a class="button button-secondary" href="{{ url_for('workout_sessions.history') }}">Workout history &rarr;</a>
-    </section>
-    <section class="card">
-      <div><h2>Find your next movement.</h2><p class="muted">Explore exercises to round out your routine.</p></div>
-      <a class="button button-secondary" href="{{ url_for('exercises.list_exercises') }}">Browse the exercise library &rarr;</a>
-    </section>
+  <div class="page-heading">
+    <h2>{{ "Your routines" if routines else "Start your first workout" }}</h2>
+    <a href="{{ url_for('workout_templates.list_templates') }}">{{ "All routines" if routines else "Browse routines" }} &rarr;</a>
+  </div>
+  {% if not routines %}
+    <p class="muted">Try a ready-made routine, or create one of your own.</p>
+  {% endif %}
+  <ul class="exercise-list">
+    {% for routine in routines or ready_made %}
+      <li class="exercise-item routine-row">
+        <div class="item-main">
+          <a href="{{ url_for('workout_templates.detail', template_id=routine.id) }}">{{ routine.name }}</a>
+          <div class="muted">{{ routine.difficulty }} · {{ routine.items|length }} exercises</div>
+        </div>
+        {% if not active and routine.items %}
+          <form method="post" action="{{ url_for('workout_sessions.start') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="template_id" value="{{ routine.id }}">
+            <button class="button" type="submit" aria-label="Start {{ routine.name }}">Start workout</button>
+          </form>
+        {% elif not routine.items %}
+          <a href="{{ url_for('workout_templates.detail', template_id=routine.id, manage=1) }}">Add exercises</a>
+        {% endif %}
+      </li>
+    {% endfor %}
+  </ul>
+  <div class="actions">
+    <a class="button button-secondary" href="{{ url_for('workout_templates.create') }}">Create a routine</a>
+    {% if not active %}
+      <form method="post" action="{{ url_for('workout_sessions.start') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit" class="link-button">Start without a routine</button>
+      </form>
+    {% endif %}
   </div>
 {% endblock %}
