@@ -2,7 +2,7 @@
 {% from "_form_field.html" import field %}
 
 {# Used for both "new" (template is None) and "edit details" #}
-{% macro heading() %}{{ "Edit " ~ template.name if template else "New workout template" }}{% endmacro %}
+{% macro heading() %}{{ "Edit " ~ template.name if template else "New routine" }}{% endmacro %}
 
 {% block title %}{{ heading() }} · LiftLog{% endblock %}
 

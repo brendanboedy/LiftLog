@@ -74,7 +74,7 @@ def copy_details(form, template):
 
 
 def back_to(template):
-    return redirect(url_for("workout_templates.detail", template_id=template.id))
+    return redirect(url_for("workout_templates.detail", template_id=template.id, manage=1))
 
 
 # ---------- templates ----------
@@ -130,7 +130,7 @@ def edit(template_id):
     if form.validate_on_submit():
         copy_details(form, template)
         db.session.commit()
-        flash("Template updated.", "success")
+        flash("Routine updated.", "success")
         return back_to(template)
     return render_template("workout_templates/form.html", form=form, template=template)
 
@@ -226,7 +226,7 @@ def copy(template_id):
     db.session.add(new)
     db.session.commit()
 
-    message = f"Copied {new.name} to your templates."
+    message = f"Copied {new.name} to your routines."
     if skipped:
         message += (f" {skipped} exercise{'' if skipped == 1 else 's'} left out because "
                     f"{'it is' if skipped == 1 else 'they are'} private to {original.owner.username}.")

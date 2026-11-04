@@ -12,7 +12,7 @@
     </div>
   {% else %}
     <div class="actions">
-      <a class="button" href="{{ url_for('workout_templates.list_templates') }}">Start from a template</a>
+      <a class="button" href="{{ url_for('workout_templates.list_templates') }}">Start from a routine</a>
       <form class="inline" method="post" action="{{ url_for('workout_sessions.start') }}">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <button type="submit" class="button button-secondary">Start an empty workout</button>

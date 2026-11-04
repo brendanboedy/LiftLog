@@ -1,13 +1,14 @@
 {% extends "base.html" %}
 
-{% block title %}My templates · LiftLog{% endblock %}
+{% block title %}My routines · LiftLog{% endblock %}
 
 {% block content %}
   <div class="page-heading">
-    <h1>My workout templates</h1>
+    <h1>My workout routines</h1>
     <div class="actions">
-      <a href="{{ url_for('workout_templates.browse_public') }}">Browse public templates</a>
-      <a class="button" href="{{ url_for('workout_templates.create') }}">New template</a>
+      <a href="{{ url_for('exercises.list_exercises') }}">Exercise library</a>
+      <a href="{{ url_for('workout_templates.browse_public') }}">Browse public routines</a>
+      <a class="button" href="{{ url_for('workout_templates.create') }}">New routine</a>
     </div>
   </div>
 
@@ -26,15 +27,16 @@
     </ul>
   {% else %}
     <div class="card">
-      <p>You don't have any templates yet. A template is a workout plan you can reuse,
+      <p>You don't have any routines yet. A routine is a workout plan you can reuse,
         like "Push Day" or "Full Body A".</p>
-      <a class="button" href="{{ url_for('workout_templates.create') }}">Create your first template</a>
+      {% if predefined %}<a class="button" href="#ready-made">Try a ready-made routine</a>{% endif %}
+      <a class="button button-secondary" href="{{ url_for('workout_templates.create') }}">Create your first routine</a>
     </div>
   {% endif %}
 
   {% if predefined %}
     {# FR-19: ready-made templates anyone can view and start #}
-    <h2>Ready-made templates</h2>
+    <h2 id="ready-made">Ready-made routines</h2>
     <ul class="exercise-list">
       {% for template in predefined %}
         <li class="exercise-item">

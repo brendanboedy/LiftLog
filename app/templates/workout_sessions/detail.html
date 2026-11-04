@@ -15,7 +15,7 @@
       <dt>Date</dt><dd>{{ workout.date_performed.strftime("%A, %B %d, %Y") }}</dd>
       <dt>Duration</dt><dd>{{ workout.duration_minutes ~ " min" if workout.duration_minutes else "Not recorded" }}</dd>
       <dt>Energy</dt><dd>{{ workout.energy_rating ~ " / 5" if workout.energy_rating else "Not recorded" }}</dd>
-      <dt>Template</dt>
+      <dt>Routine</dt>
       <dd>
         {% if workout.template %}
           <a href="{{ url_for('workout_templates.detail', template_id=workout.template.id) }}">{{ workout.template.name }}</a>
