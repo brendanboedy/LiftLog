@@ -3,14 +3,17 @@ A web application designed for the fitness community and those wishing to join. 
 
 ## Running LiftLog on your computer
 
-LiftLog is a Python + Flask web app. These steps are for Windows (PowerShell, e.g. the VS Code terminal). Run them from the `LiftLog` folder.
+LiftLog is a Python + Flask web app. Run these steps from the `LiftLog` folder. They work on Windows (PowerShell, e.g. the VS Code terminal)
+and on Mac/Linux (Terminal); where a command differs, both versions are shown.
 
-**You need:** Git and Python 3.11 or newer (`python --version` should print a version).
+**You need:** Git and Python 3.11 or newer (`python --version` should print a version;
+on Mac/Linux use `python3 --version`).
 
 1. **Create a virtual environment** (a private folder for this project's packages), once:
    ```
    python -m venv venv
    ```
+   (Mac/Linux: `python3 -m venv venv`)
 2. **Turn it on** (every time you open a new terminal):
    ```
    venv\Scripts\Activate.ps1
@@ -26,6 +29,7 @@ LiftLog is a Python + Flask web app. These steps are for Windows (PowerShell, e.
    ```
    copy .env.example .env
    ```
+   (Mac/Linux: `cp .env.example .env`)
    Then open `.env` and replace `SECRET_KEY` with the output of
    `python -c "import secrets; print(secrets.token_hex(32))"`.
    `.env` is ignored by git, so never commit it.
@@ -86,14 +90,16 @@ app/
   models.py        database tables (User, Exercise, workout templates, sessions and sets)
   main/            general pages (home, dashboard, /health)
   auth/            register, log in, log out
+  profile/         profile details and changing your password
   exercises/       exercise library: browse, search, custom exercises, seed data
   workout_templates/  workout templates: create, add/reorder exercises, edit, delete
   workout_sessions/   workouts: start from a template, log sets, finish, history
+  progress/        progress chart for each exercise (heaviest weight and volume)
   templates/       HTML pages (base.html is the shared layout)
   static/          CSS, JavaScript and images
 migrations/        database table changes (made by Flask-Migrate)
 tests/             automated tests (run with pytest)
-docs/              course documents (RD, IT, progress reports)
+docs/              working copy of the RD, diagrams and blank course templates
 run.py             starts the app
 ```
 Each new feature (login, exercises, workout templates, sessions...) gets its own folder in `app/`, like `app/main/`.
