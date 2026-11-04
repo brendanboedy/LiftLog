@@ -9,6 +9,7 @@ session answers "404 Not Found". Pages that change data only accept POST.
 """
 from flask import abort, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
+from sqlalchemy.orm import selectinload
 
 from app.extensions import db
 from app.models import Exercise, SetEntry, WorkoutSession, WorkoutSessionExercise, WorkoutTemplate
@@ -133,11 +134,17 @@ def add_to_session(workout, exercise_id, template_item=None):
 @bp.route("/")
 @login_required
 def history():
-    """FR-29: completed sessions, most recent first."""
+    """FR-29: completed sessions, most recent first.
+
+    The page shows each workout's exercise and set counts. selectinload fetches
+    the exercises and sets of every listed workout in one extra query each,
+    instead of one query per workout (and per exercise) while the page renders.
+    """
     workouts = db.session.execute(
         db.select(WorkoutSession)
         .where(WorkoutSession.user_id == current_user.id, WorkoutSession.completed.is_(True))
         .order_by(WorkoutSession.date_performed.desc(), WorkoutSession.id.desc())
+        .options(selectinload(WorkoutSession.items).selectinload(WorkoutSessionExercise.sets))
     ).scalars().all()
     return render_template(
         "workout_sessions/history.html",
