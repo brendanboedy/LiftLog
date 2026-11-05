@@ -88,23 +88,36 @@ def blank_set_form(item, previous=None):
     return form
 
 
-def render_workout(workout, set_forms=None, exercise_form=None, status=200):
-    """The in-progress workout page. set_forms can replace one exercise's form to show its errors."""
-    # Only the signed-in user's completed workouts can supply previous values.
-    exercise_ids = {item.exercise_id for item in workout.items}
-    previous_sets = {}
-    if exercise_ids:
-        entries = db.session.execute(
+def last_sets(user, exercise_ids):
+    """The most recent set `user` logged for each exercise, in a completed workout.
+
+    Returns {exercise_id: SetEntry}. Used for the "Last time: 135 lb x 8" hint and
+    to pre-fill the weight and reps boxes. Only the user's own finished workouts count.
+
+    One small query per exercise in today's workout, each returning a single row,
+    so the page doesn't get slower as the user's history grows.
+    """
+    previous = {}
+    for exercise_id in exercise_ids:
+        entry = db.session.execute(
             db.select(SetEntry)
             .join(WorkoutSessionExercise).join(WorkoutSession)
-            .where(WorkoutSession.user_id == current_user.id,
+            .where(WorkoutSession.user_id == user.id,
                    WorkoutSession.completed.is_(True),
-                   WorkoutSessionExercise.exercise_id.in_(exercise_ids))
+                   WorkoutSessionExercise.exercise_id == exercise_id)
+            # Newest workout first; within it, the last exercise slot and the last set.
             .order_by(WorkoutSession.date_performed.desc(), WorkoutSession.id.desc(),
                       WorkoutSessionExercise.order_index.desc(), SetEntry.set_number.desc())
-        ).scalars()
-        for entry in entries:
-            previous_sets.setdefault(entry.session_exercise.exercise_id, entry)
+            .limit(1)
+        ).scalar_one_or_none()
+        if entry is not None:
+            previous[exercise_id] = entry
+    return previous
+
+
+def render_workout(workout, set_forms=None, exercise_form=None, status=200):
+    """The in-progress workout page. set_forms can replace one exercise's form to show its errors."""
+    previous_sets = last_sets(current_user, {item.exercise_id for item in workout.items})
     forms = {item.id: blank_set_form(item, previous_sets.get(item.exercise_id)) for item in workout.items}
     forms.update(set_forms or {})
     return render_template(
