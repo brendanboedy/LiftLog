@@ -1,6 +1,7 @@
 # LiftLog Documentation
 
-Course documents for CEN4090L (Group 9). Code will live in a separate folder once the team picks a tech stack.
+Working course documents for CEN4090L (Group 9). The app's code lives in the main `LiftLog` folder (see the
+main README). Submitted versions of each increment's documents are on Canvas, not in this repository.
 
 | Folder | What goes here |
 |---|---|
@@ -12,6 +13,7 @@ Course documents for CEN4090L (Group 9). Code will live in a separate folder onc
 
 ## File naming
 - RD and IT documents: `LiftLog_RD_vX.Y.docx`, `LiftLog_IT_vX.Y.docx`
+- Working drafts that haven't been submitted add `Draft`, e.g. `LiftLog_RD_Draft_v0.4.docx`
 - Progress reports: `Progress_Report_Increment_1.docx`, and so on
 
 ## Due dates (from the course guidelines)
