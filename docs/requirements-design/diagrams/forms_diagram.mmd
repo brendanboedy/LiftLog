@@ -1,0 +1,64 @@
+%% LiftLog form classes (Flask-WTF). Edit at https://mermaid.live
+classDiagram
+    direction LR
+    class FlaskForm {
+        <<library>>
+        +validate_on_submit() bool
+        +hidden_tag()
+    }
+    class RegistrationForm {
+        +username
+        +password
+        +confirm_password
+        +validate_username(field)
+    }
+    class LoginForm {
+        +username
+        +password
+    }
+    class ExerciseForm {
+        +name
+        +muscle_group
+        +equipment_type
+        +movement_type
+        +difficulty
+        +instructions
+        +validate_name(field)
+    }
+    class TemplateForm {
+        +name
+        +description
+        +difficulty
+    }
+    class TargetsForm {
+        +target_sets
+        +rep_range_min
+        +rep_range_max
+        +validate_rep_range_max(field)
+    }
+    class AddExerciseForm {
+        +exercise_id
+    }
+    class SetForm {
+        +weight
+        +reps
+        +notes
+    }
+    class SessionExerciseForm {
+        +exercise_id
+    }
+    class FinishForm {
+        +date_performed
+        +duration_minutes
+        +energy_rating
+        +notes
+    }
+    FlaskForm <|-- RegistrationForm
+    FlaskForm <|-- LoginForm
+    FlaskForm <|-- ExerciseForm
+    FlaskForm <|-- TemplateForm
+    FlaskForm <|-- TargetsForm
+    TargetsForm <|-- AddExerciseForm
+    FlaskForm <|-- SetForm
+    FlaskForm <|-- SessionExerciseForm
+    FlaskForm <|-- FinishForm

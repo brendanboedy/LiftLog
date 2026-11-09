@@ -1,0 +1,26 @@
+%% UC-23 Log Set. Edit at https://mermaid.live
+sequenceDiagram
+    actor U as User
+    participant B as Browser
+    participant R as workout_sessions.add_set()
+    participant F as SetForm
+    participant WSE as WorkoutSessionExercise
+    participant DB as Database
+    U->>B: Type weight and reps, click "Log set"
+    B->>R: POST /sessions/<id>/exercises/<item>/sets
+    R->>DB: get WorkoutSession(id)
+    DB-->>R: session
+    R->>R: check owner (else 404) and in progress (else 400)
+    R->>DB: get WorkoutSessionExercise(item)
+    DB-->>R: item (must belong to this session, else 404)
+    R->>F: validate_on_submit()
+    alt input invalid (e.g. negative weight, reps not a whole number)
+        F-->>R: false, with error messages
+        R-->>B: 200 workout page with errors under the boxes
+    else input valid
+        F-->>R: true
+        R->>WSE: append SetEntry(set_number = count + 1, weight, reps, notes)
+        R->>DB: INSERT set_entries row, COMMIT
+        R-->>B: 302 redirect to /sessions/<id>
+        B->>U: Updated table of sets, next form pre-filled with this set
+    end
