@@ -1,0 +1,24 @@
+%% UC-21 Start Session from Template. Edit at https://mermaid.live
+sequenceDiagram
+    actor U as User
+    participant B as Browser
+    participant R as workout_sessions.start()
+    participant WS as WorkoutSession
+    participant T as WorkoutTemplate
+    participant DB as Database
+    U->>B: Click "Start this workout" on a template
+    B->>R: POST /sessions/start (template_id, CSRF token)
+    R->>WS: active_for(current_user)
+    WS->>DB: SELECT in-progress session for user
+    DB-->>WS: none
+    R->>DB: get WorkoutTemplate(template_id)
+    DB-->>R: template
+    R->>T: is_owned_by(current_user)
+    T-->>R: true (otherwise 404)
+    R->>WS: new WorkoutSession(user, template, name)
+    loop each WorkoutTemplateExercise, in order
+        R->>WS: add WorkoutSessionExercise(exercise, order_index, copied targets)
+    end
+    R->>DB: INSERT session and its exercises, COMMIT
+    R-->>B: 302 redirect to /sessions/<id>
+    B->>U: Workout page with each exercise and its "log set" form

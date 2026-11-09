@@ -1,0 +1,29 @@
+%% UC-13 Add Exercise to Template. Edit at https://mermaid.live
+sequenceDiagram
+    actor U as User
+    participant B as Browser
+    participant R as workout_templates.add_exercise()
+    participant F as AddExerciseForm
+    participant E as Exercise
+    participant T as WorkoutTemplate
+    participant DB as Database
+    U->>B: Choose exercise, sets and rep range, click "Add to template"
+    B->>R: POST /templates/<id>/exercises
+    R->>DB: get WorkoutTemplate(id)
+    DB-->>R: template
+    R->>T: is_owned_by(current_user)
+    T-->>R: true (otherwise 404)
+    R->>E: visible_to(current_user), not archived
+    E->>DB: SELECT predefined + user's own active exercises
+    DB-->>R: allowed choices
+    R->>F: validate_on_submit()
+    alt invalid (no exercise, sets outside 1-20, min reps > max reps, exercise not allowed)
+        F-->>R: false, with error messages
+        R-->>B: 200 template page with errors
+    else valid
+        F-->>R: true
+        R->>T: append WorkoutTemplateExercise(order_index = count + 1, targets)
+        R->>DB: INSERT row, COMMIT
+        R-->>B: 302 redirect to /templates/<id>
+        B->>U: Template page with the new exercise at the end
+    end

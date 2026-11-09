@@ -1,0 +1,105 @@
+%% LiftLog class diagram (Increment 2, updated Nov 1). Edit at https://mermaid.live
+classDiagram
+    direction LR
+    class User {
+        +int id
+        +str username
+        +str password_hash
+        +datetime created_at
+        +str goal_type
+        +str experience_level
+        +float body_weight
+        +int age
+        +str gender
+        +set_password(password)
+        +check_password(password) bool
+        +find_by_username(username)$ User
+    }
+    class Exercise {
+        +int id
+        +str name
+        +str muscle_group
+        +str equipment_type
+        +str movement_type
+        +str difficulty
+        +str instructions
+        +bool is_archived
+        +int created_by
+        +datetime created_at
+        +is_predefined() bool
+        +is_owned_by(user) bool
+        +is_visible_to(user) bool
+        +visible_to(user)$ Query
+        +name_taken(name, user, exclude_id)$ bool
+    }
+    class WorkoutTemplate {
+        +int id
+        +int user_id
+        +str name
+        +str description
+        +str difficulty
+        +bool is_public
+        +datetime created_at
+        +is_predefined() bool
+        +is_owned_by(user) bool
+        +is_visible_to(user) bool
+        +is_startable_by(user) bool
+        +renumber()
+    }
+    class WorkoutTemplateExercise {
+        +int id
+        +int template_id
+        +int exercise_id
+        +int order_index
+        +int target_sets
+        +int rep_range_min
+        +int rep_range_max
+        +rep_range() str
+    }
+    class WorkoutSession {
+        +int id
+        +int user_id
+        +int template_id
+        +str name
+        +str notes
+        +int duration_minutes
+        +int energy_rating
+        +bool completed
+        +date date_performed
+        +datetime created_at
+        +is_owned_by(user) bool
+        +set_count() int
+        +minutes_so_far() int
+        +renumber()
+        +active_for(user)$ WorkoutSession
+    }
+    class WorkoutSessionExercise {
+        +int id
+        +int session_id
+        +int exercise_id
+        +int order_index
+        +int target_sets
+        +int rep_range_min
+        +int rep_range_max
+        +target() str
+        +renumber_sets()
+    }
+    class SetEntry {
+        +int id
+        +int session_exercise_id
+        +int set_number
+        +float weight
+        +int reps
+        +str notes
+        +weight_text() str
+    }
+
+    User "0..1" --> "0..*" Exercise : creates (custom)
+    User "0..1" --> "0..*" WorkoutTemplate : owns
+    User "1" --> "0..*" WorkoutSession : performs
+    WorkoutTemplate "1" *-- "0..*" WorkoutTemplateExercise : contains
+    WorkoutTemplateExercise "0..*" --> "1" Exercise : uses
+    WorkoutTemplate "0..1" --> "0..*" WorkoutSession : started from
+    WorkoutSession "1" *-- "0..*" WorkoutSessionExercise : contains
+    WorkoutSessionExercise "0..*" --> "1" Exercise : uses
+    WorkoutSessionExercise "1" *-- "0..*" SetEntry : records
